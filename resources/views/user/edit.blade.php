@@ -26,6 +26,16 @@
                             <x-input-label for="password" class="block font-medium text-sm text-gray-700">Nueva Contraseña (opcional)</x-input-label>
                             <x-text-input id="password" type="password" name="password" class="mt-1 block w-full" />
                         </div>
+                        @can('assign roles')
+                        <div class="mt-4">
+                            <x-input-label for="role" class="block font-medium text-sm text-gray-700">Rol</x-input-label>
+                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->name }}" {{ $user->hasRole($role->name) ? 'selected' : '' }}>{{ $role->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endcan
                         
                         <div class="mt-4">
                             <x-primary-button type="submit">Actualizar</x-primary-button>

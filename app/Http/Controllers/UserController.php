@@ -23,7 +23,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user.create');
+        $roles = \Spatie\Permission\Models\Role::all();
+        return view('user.create', compact('roles'));
     }
 
     /**
@@ -35,13 +36,16 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', Rules\Password::defaults()],
+            'role' => ['required', 'string', 'exists:roles,name'],
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        $user->assignRole($request->role);
 
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente.');
     }
@@ -59,7 +63,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('user.edit', compact('user'));
+        $roles = \Spatie\Permission\Models\Role::all();
+        return view('user.edit', compact('user', 'roles'));
     }
 
     /**
@@ -71,6 +76,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
             'password' => ['nullable', Rules\Password::defaults()],
+            'role' => ['sometimes', 'string', 'exists:roles,name'],
         ]);
 
         $data = [
@@ -83,6 +89,10 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        if (auth()->user()->can('assign roles') && $request->has('role')) {
+            $user->syncRoles($request->role);
+        }
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente.');
     }

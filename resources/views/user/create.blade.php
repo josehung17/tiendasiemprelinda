@@ -25,6 +25,14 @@
                             <x-text-input id="password" type="password" name="password" required class="mt-1 block w-full" />
                         </div>
                         <div class="mt-4">
+                            <x-input-label for="role" class="block font-medium text-sm text-gray-700">Rol</x-input-label>
+                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->name }}">{{ $role->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mt-4">
                             <x-primary-button type="submit">Crear</x-primary-button>
                         </div>
                     </form>

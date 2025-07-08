@@ -34,10 +34,11 @@ class RolesAndPermissionsSeeder extends Seeder
                             'edit marcas',
                             'delete marcas',
                             'view marcas',
+                            'assign roles',
                         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Crear roles y asignar permisos
@@ -64,7 +65,7 @@ class RolesAndPermissionsSeeder extends Seeder
         ];
 
         foreach ($roles as $roleName => $rolePermissions) {
-            $role = Role::create(['name' => $roleName]);
+            $role = Role::firstOrCreate(['name' => $roleName]);
             $role->syncPermissions($rolePermissions);
         }
     }
