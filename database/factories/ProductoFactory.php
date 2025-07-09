@@ -23,7 +23,7 @@ class ProductoFactory extends Factory
             'descripcion' => $this->faker->paragraph(),
             'precio' => $this->faker->randomFloat(2, 10, 1000),
             'precio_descuento' => $this->faker->optional(0.5)->randomFloat(2, 5, 900),
-            'ruta_imagen' => null, // O puedes generar una ruta de imagen falsa si es necesario
+            'ruta_imagen' => 'productos/placeholder.png',
             'nuevo' => $this->faker->boolean(),
             'recomendado' => $this->faker->boolean(),
             'descuento' => $this->faker->boolean(),

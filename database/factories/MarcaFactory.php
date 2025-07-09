@@ -17,8 +17,8 @@ class MarcaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->unique()->word(),
-            'ruta_imagen' => null, // O puedes generar una ruta de imagen falsa si es necesario
+            'nombre' => $this->faker->unique()->company(),
+            'ruta_imagen' => 'marcas/placeholder.png',
         ];
     }
 }

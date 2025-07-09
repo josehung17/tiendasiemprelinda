@@ -18,7 +18,7 @@ class CategoriaFactory extends Factory
     {
         return [
             'nombre' => $this->faker->unique()->word(),
-            'ruta_imagen' => null, // O puedes generar una ruta de imagen falsa si es necesario
+            'ruta_imagen' => 'categorias/placeholder.png',
         ];
     }
 }
