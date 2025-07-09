@@ -1,25 +1,7 @@
 <x-public-layout>
     <!-- Cabecera (Header) -->
     <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <!-- Icono Hamburguesa y Logo -->
-            <div class="flex items-center">
-                <button class="text-gray-500 focus:outline-none focus:text-gray-600 md:hidden">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <h1 class="text-2xl font-bold text-gray-800 ml-4">SiempreLinda</h1>
-            </div>
-            <!-- Redes Sociales y Búsqueda -->
-            <div class="flex items-center space-x-4">
-                <span class="text-gray-600">Redes Sociales</span>
-                <svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</a>
-                @else
-                    <a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</a>
-                @endauth
-            </div>
-        </div>
+        @include('layouts.navigation-web')
     </header>
 
     <!-- Sección Principal de Contenido Visual/Informativo -->
@@ -33,10 +15,10 @@
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Nuestros Clientes</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Ejemplo de imágenes de clientes. Deberías reemplazarlas con tus propias imágenes. -->
-                        <img src="{{ asset('assets/images/client_placeholder_1.jpg') }}" alt="Cliente 1" class="w-full h-24 object-cover rounded-lg shadow-md">
-                        <img src="{{ asset('assets/images/client_placeholder_2.jpg') }}" alt="Cliente 2" class="w-full h-24 object-cover rounded-lg shadow-md">
-                        <img src="{{ asset('assets/images/client_placeholder_3.jpg') }}" alt="Cliente 3" class="w-full h-24 object-cover rounded-lg shadow-md">
-                        <img src="{{ asset('assets/images/client_placeholder_4.jpg') }}" alt="Cliente 4" class="w-full h-24 object-cover rounded-lg shadow-md">
+                        <img src="{{ asset('assets/images/client_placeholder 1.jpg') }}" alt="Cliente 1" class="w-full h-24 object-cover rounded-lg shadow-md">
+                        <img src="{{ asset('assets/images/client_placeholder 2.jpg') }}" alt="Cliente 2" class="w-full h-24 object-cover rounded-lg shadow-md">
+                        <img src="{{ asset('assets/images/client_placeholder 3.jpg') }}" alt="Cliente 3" class="w-full h-24 object-cover rounded-lg shadow-md">
+                        <img src="{{ asset('assets/images/client_placeholder 4.jpg') }}" alt="Cliente 4" class="w-full h-24 object-cover rounded-lg shadow-md">
                     </div>
                 </div>
             </div>
@@ -44,7 +26,7 @@
     </section>
 
     <!-- Sección de Marcas -->
-    <section class="bg-white py-8">
+    <section id="marcas" class="bg-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-center text-gray-800 text-2xl font-bold mb-4">Marcas</h2>
             <div class="overflow-x-auto whitespace-nowrap py-4">
