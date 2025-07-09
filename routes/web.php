@@ -6,9 +6,15 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\UserController;
+use App\Models\Producto;
 
 Route::get('/', function () {
-    return view('welcome');
+    $marcas = App\Models\Marca::all();
+    $productos = Producto::where('nuevo', true)->latest()->take(8)->get(); // Obtener los últimos 8 productos nuevos
+    $productosRecomendados = Producto::where('recomendado', true)->latest()->take(8)->get(); // Obtener los últimos 8 productos recomendados
+    $productosOferta = Producto::where('descuento', true)->latest()->take(8)->get(); // Obtener los últimos 8 productos en oferta
+    $categorias = App\Models\Categoria::all(); // Obtener todas las categorías
+    return view('welcome', compact('marcas', 'productos', 'productosRecomendados', 'categorias', 'productosOferta'));
 });
 
 Route::get('/dashboard', function () {
