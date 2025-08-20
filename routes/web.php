@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('categorias', CategoriaController::class);
     Route::resource('marcas', MarcaController::class);
     Route::resource('productos', ProductoController::class);
+    Route::resource('clientes', ClienteController::class);
 
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class);
