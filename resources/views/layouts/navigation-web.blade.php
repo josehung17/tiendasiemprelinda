@@ -28,39 +28,39 @@
                 <li>
                     <a href="#" class="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">Categorias</a>
                 </li>
-                 {{-- Link de contacto--}}
-                <li class="flex items-center space-x-6 rtl:space-x-reverse">
-                    <a href="https://wa.me/584261369812" target="_blank" class="flex items-center space-x-2">
-                        <img src="{{ asset('assets/images/redes/whatsapp.svg') }}" alt="WhatsApp" class="w-6 h-6 inline-block">
-                        <p class="md:hidden lg:inline-block text-gray-500 dark:text-gray-400">Whatsapp</p>
-                    </a>
-                </li>
-                 {{-- Redes Sociales --}}
-                <li class="flex items-center space-x-6 rtl:space-x-reverse">
+                 {{-- Redes Sociales, WhatsApp y Login --}}
+                <li class="flex items-center justify-between w-full md:w-auto">
+                    <div class="flex items-center space-x-6 rtl:space-x-reverse">
+                        {{-- Facebook --}}
+                        <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
+                            <a href="https://www.facebook.com/share/1HpjuEnSX2/" target="_blank">
+                                <img src="{{ asset('assets/images/redes/facebook.svg') }}" alt="Facebook" class="w-6 h-6 inline-block">
+                            </a>
+                        </div>
+                        
+                        {{-- Instagram --}}
+                        <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
+                            <a href="https://www.instagram.com/inversionessiemprelinda?igsh=MWQ3cHE3ZnhmMW8xeQ==" target="_blank">
+                                <img src="{{ asset('assets/images/redes/instagram.svg') }}" alt="Instagram" class="w-4 h-4 inline-block">
+                            </a>
+                        </div>
 
-                    {{-- Facebook --}}
-                    <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
-                        <a href="https://www.facebook.com/share/1HpjuEnSX2/" target="_blank">
-                            <img src="{{ asset('assets/images/redes/facebook.svg') }}" alt="Facebook" class="w-6 h-6 inline-block">
-                        </a>
-                    </div>
-                    
-                    {{-- instagram --}}
-                    <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
-                        <a href="https://www.instagram.com/inversionessiemprelinda?igsh=MWQ3cHE3ZnhmMW8xeQ==" target="_blank">
-                            <img src="{{ asset('assets/images/redes/instagram.svg') }}" alt="Instagram" class="w-4 h-4 inline-block">
-                        </a>
+                        {{-- TikTok --}}
+                        <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
+                            <a href="https://www.tiktok.com/@inversionessiemprelinda?_t=ZM-8xtB8JFvLlw&_r=1" target="_blank">
+                                <img src="{{ asset('assets/images/redes/tiktok.svg') }}" alt="TikTok" class="w-6 h-6 inline-block">
+                            </a>
+                        </div>
+
+                        {{-- WhatsApp --}}
+                        <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
+                             <a href="https://wa.me/584261369812" target="_blank">
+                                <img src="{{ asset('assets/images/redes/whatsapp.svg') }}" alt="WhatsApp" class="w-6 h-6 inline-block">
+                            </a>
+                        </div>
                     </div>
 
-                    {{-- TikTok --}}
-                    <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full">
-                        <a href="https://www.tiktok.com/@inversionessiemprelinda?_t=ZM-8xtB8JFvLlw&_r=1" target="_blank">
-                            <img src="{{ asset('assets/images/redes/tiktok.svg') }}" alt="TikTok" class="w-6 h-6 inline-block">
-                        </a>
-                    </div>            
-                </li>
-                <li>
-                    <a href="{{ route('login') }}" class="text-sm  text-blue-600 dark:text-blue-500 hover:underline">
+                    <a href="{{ route('login') }}" class="text-sm text-blue-600 dark:text-blue-500 hover:underline ml-6">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
                         </svg>

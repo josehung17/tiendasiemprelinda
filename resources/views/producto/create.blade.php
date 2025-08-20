@@ -1,102 +1,97 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-400 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Crear nuevo Producto
         </h2>
     </x-slot>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
                     @can('create products')
-                    <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data">
-                        {{-- Directiva CSRF corregida --}}
+                    <form method="POST" action="{{ route('productos.store') }}" enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
-                        {{-- Nombre --}}
                         <div>
-                            <x-input-label for="nombre" class="block font-medium text-sm text-gray-700">Nombre</x-input-label>
-                            <x-text-input id="nombre" type="text" name="nombre" required autofocus class="mt-1 block w-full" />
+                            <x-input-label for="nombre" :value="__('Nombre')" />
+                            <x-text-input id="nombre" name="nombre" type="text" class="mt-1 block w-full" required autofocus value="{{ old('nombre') }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('nombre')" />
                         </div>
 
-                        {{-- Marcas --}}
-                        <div class="mt-4">
-                            <x-input-label for="marca" class="block mb-2">Selecciona una Marca</x-input-label>
-                            <x-select-input id="marca" name="marca_id" class="block mt-1 w-full">
-                                <option selected disabled>Elige una marca</option>
-                                {{-- Bucle foreach corregido --}}
+                        <div>
+                            <x-input-label for="marca_id" :value="__('Marca')" />
+                            <x-select-input id="marca_id" name="marca_id" class="mt-1 block w-full" required>
+                                <option value="">{{ __('Selecciona una marca') }}</option>
                                 @foreach ($marcas as $marca)
-                                    <option value="{{ $marca->id }}">{{ $marca->nombre }}</option>
+                                    <option value="{{ $marca->id }}" {{ old('marca_id') == $marca->id ? 'selected' : '' }}>{{ $marca->nombre }}</option>
                                 @endforeach
                             </x-select-input>
+                            <x-input-error class="mt-2" :messages="$errors->get('marca_id')" />
                         </div>
 
-                        {{-- Categorias --}}
-                        <div class="mt-4">
-                            <x-input-label for="categoria" class="block mb-2">Selecciona una Categoría</x-input-label>
-                            <x-select-input id="categoria" name="categoria_id" class="block mt-1 w-full">
-                                <option selected disabled>Elige una categoría</option>
-                                {{-- Bucle foreach corregido --}}
+                        <div>
+                            <x-input-label for="categoria_id" :value="__('Categoría')" />
+                            <x-select-input id="categoria_id" name="categoria_id" class="mt-1 block w-full" required>
+                                <option value="">{{ __('Selecciona una categoría') }}</option>
                                 @foreach ($categorias as $categoria)
-                                    <option value="{{ $categoria->id }}">{{ $categoria->nombre }}</option>
+                                    <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>{{ $categoria->nombre }}</option>
                                 @endforeach
                             </x-select-input>
+                            <x-input-error class="mt-2" :messages="$errors->get('categoria_id')" />
                         </div>
 
-                        {{-- Descripción --}}
-                        <div class="mt-4">
-                            <x-input-label for="descripcion" class="block mb-2">Describa el Producto</x-input-label>
-                            <x-text-area id="descripcion" name="descripcion" rows="4" class="block p-2.5 w-full" placeholder="Escriba su descripción aquí..."></x-text-area>
+                        <div>
+                            <x-input-label for="descripcion" :value="__('Descripción')" />
+                            <x-text-area id="descripcion" name="descripcion" rows="4" class="mt-1 block w-full" placeholder="{{ __('Escribe la descripción aquí...') }}">{{ old('descripcion') }}</x-text-area>
+                            <x-input-error class="mt-2" :messages="$errors->get('descripcion')" />
                         </div>
 
-                        {{-- Precio --}}
-                        <div class="mt-4">
-                            <x-input-label for="precio" class="block mb-2">Precio</x-input-label>
-                            <x-text-input id="precio" type="text" name="precio" required class="mt-1 block w-full" />
+                        <div>
+                            <x-input-label for="precio" :value="__('Precio')" />
+                            <x-text-input id="precio" name="precio" type="number" step="0.01" class="mt-1 block w-full" required value="{{ old('precio') }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('precio')" />
                         </div>
 
-                        {{-- Precio descuento --}}
-                        <div class="mt-4">
-                            <x-input-label for="precio_descuento" class="block mb-2">Precio con Descuento</x-input-label>
-                            <x-text-input id="precio_descuento" type="text" name="precio_descuento" class="mt-1 block w-full" />
+                        <div>
+                            <x-input-label for="precio_descuento" :value="__('Precio con Descuento (opcional)')" />
+                            <x-text-input id="precio_descuento" name="precio_descuento" type="number" step="0.01" class="mt-1 block w-full" value="{{ old('precio_descuento') }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('precio_descuento')" />
                         </div>
 
-                        {{-- Imagen --}}
-                        <div class="mt-4">
-                            <x-input-label for="ruta_imagen" class="block mb-2">Imagen del Producto</x-input-label>
-                            <x-text-input id="ruta_imagen" type="file" name="ruta_imagen" required class="mt-1 block w-full" />
+                        <div>
+                            <x-input-label for="ruta_imagen" :value="__('Imagen del Producto')" />
+                            <input id="ruta_imagen" name="ruta_imagen" type="file" class="mt-1 block w-full text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-600" required />
+                            <x-input-error class="mt-2" :messages="$errors->get('ruta_imagen')" />
                         </div>
 
-                        {{-- Checkboxes --}}
                         <div class="mt-4 space-y-2">
-                            <div>
-                                <input id="nuevo" name="nuevo" type="checkbox" value="1" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
-                                <label for="nuevo" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    Nuevo Producto
+                            <div class="flex items-center">
+                                <input id="nuevo" name="nuevo" type="checkbox" value="1" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" {{ old('nuevo') ? 'checked' : '' }}>
+                                <label for="nuevo" class="ms-2 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ __('Nuevo Producto') }}
                                 </label>
                             </div>
-                            <div>
-                                <input id="recomendado" name="recomendado" type="checkbox" value="1" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
-                                <label for="recomendado" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    Producto Recomendado
+                            <div class="flex items-center">
+                                <input id="recomendado" name="recomendado" type="checkbox" value="1" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" {{ old('recomendado') ? 'checked' : '' }}>
+                                <label for="recomendado" class="ms-2 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ __('Producto Recomendado') }}
                                 </label>
                             </div>
-                            <div>
-                                <input id="descuento" name="descuento" type="checkbox" value="1" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500">
-                                <label for="descuento" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    Descuento
+                            <div class="flex items-center">
+                                <input id="descuento" name="descuento" type="checkbox" value="1" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" {{ old('descuento') ? 'checked' : '' }}>
+                                <label for="descuento" class="ms-2 text-sm text-gray-900 dark:text-gray-100">
+                                    {{ __('Con Descuento') }}
                                 </label>
                             </div>
                         </div>
 
-
-
-                        <div class="mt-4">
-                            <x-primary-button type="submit">Crear</x-primary-button>
+                        <div class="flex items-center gap-4">
+                            <x-primary-button>{{ __('Crear') }}</x-primary-button>
                         </div>
                     </form>
                     @else
-                    <p class="text-red-500">No tienes permiso para crear productos.</p>
+                    <p class="text-red-500 dark:text-red-400">No tienes permiso para crear productos.</p>
                     @endcan
                 </div>
             </div>
