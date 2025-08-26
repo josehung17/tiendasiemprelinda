@@ -39,6 +39,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit clients',
             'delete clients',
             'view clients',
+            'create proveedores',
+            'edit proveedores',
+            'delete proveedores',
+            'view proveedores',
+            'manage stock',
             'assign roles',
         ];
 
@@ -69,6 +74,11 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit clients',
                 'delete clients',
                 'view clients',
+                'create proveedores',
+                'edit proveedores',
+                'delete proveedores',
+                'view proveedores',
+                'manage stock',
                 'assign roles',
             ],
             'editor' => [

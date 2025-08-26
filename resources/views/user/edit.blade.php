@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Editar Usuario
+            Editar Usuario: {{ $user->name }}
         </h2>
     </x-slot>
 
@@ -10,42 +10,50 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @can('edit users')
-                    <form method="POST" action="{{ route('users.update', $user->id) }}">
+                    <form method="POST" action="{{ route('users.update', $user->id) }}" class="space-y-6">
                         @csrf
                         @method('PUT')
-                        
-                       <div>
-                            <x-input-label for="name" class="block font-medium text-sm text-gray-700">Nombre</x-input-label>
-                            <x-text-input id="name" type="text" name="name" value="{{ $user->name }}" required autofocus class="mt-1 block w-full" />
+
+                        <div>
+                            <x-input-label for="name" :value="__('Nombre')" />
+                            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" required autofocus value="{{ old('name', $user->name) }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('name')" />
                         </div>
-                        <div class="mt-4">
-                            <x-input-label for="email" class="block font-medium text-sm text-gray-700">Email</x-input-label>
-                            <x-text-input id="email" type="email" name="email" value="{{ $user->email }}" required class="mt-1 block w-full" />
+
+                        <div>
+                            <x-input-label for="email" :value="__('Email')" />
+                            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" required value="{{ old('email', $user->email) }}" />
+                            <x-input-error class="mt-2" :messages="$errors->get('email')" />
                         </div>
-                        <div class="mt-4">
-                            <x-input-label for="password" class="block font-medium text-sm text-gray-700">Nueva Contraseña (opcional)</x-input-label>
-                            <x-text-input id="password" type="password" name="password" class="mt-1 block w-full" />
+
+                        <div>
+                            <x-input-label for="password" :value="__('Nueva Contraseña (dejar en blanco para no cambiar)')" />
+                            <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" />
+                            <x-input-error class="mt-2" :messages="$errors->get('password')" />
                         </div>
+
                         @can('assign roles')
-                        <div class="mt-4">
-                            <x-input-label for="role" class="block font-medium text-sm text-gray-700">Rol</x-input-label>
-                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                        <div>
+                            <x-input-label for="role" :value="__('Rol')" />
+                            <select id="role" name="role" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                                <option value="">{{ __('Selecciona un rol') }}</option>
                                 @foreach($roles as $role)
-                                    <option value="{{ $role->name }}" {{ $user->hasRole($role->name) ? 'selected' : '' }}>{{ $role->name }}</option>
+                                    <option value="{{ $role->name }}" {{ (old('role') == $role->name || $user->hasRole($role->name)) ? 'selected' : '' }}>{{ $role->name }}</option>
                                 @endforeach
                             </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('role')" />
                         </div>
                         @endcan
-                        
-                        <div class="mt-4">
-                            <x-primary-button type="submit">Actualizar</x-primary-button>
+
+                        <div class="flex items-center gap-4">
+                            <x-primary-button>{{ __('Actualizar') }}</x-primary-button>
                         </div>
                     </form>
                     @else
-                    <p class="text-red-500">No tienes permiso para editar usuarios.</p>
+                    <p class="text-red-500 dark:text-red-400">No tienes permiso para editar usuarios.</p>
                     @endcan
                 </div>
             </div>
-        </div>      
+        </div>
     </div>
 </x-app-layout>

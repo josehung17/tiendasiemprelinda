@@ -31,10 +31,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('marcas', MarcaController::class);
     Route::resource('productos', ProductoController::class);
     Route::resource('clientes', ClienteController::class);
+    Route::resource('proveedores', App\Http\Controllers\ProveedorController::class)->parameters(['proveedores' => 'proveedor']);
+    Route::get('/stock-movements', App\Livewire\GestionarMovimientosStock::class)->name('stock-movements.index');
 
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class);
     });
+
+    // Route for POS Client Test
+    Route::get('/pos/client-test', function () {
+        return view('pos.client-test');
+    })->name('pos.client-test');
 });
 
 require __DIR__.'/auth.php';
