@@ -1,7 +1,7 @@
 <div class="flex flex-col lg:flex-row h-screen bg-gray-100 dark:bg-gray-900">
 
     {{-- Left Column: Product Search & Client Management --}}
-    <div class="w-full lg:w-1/3 p-4 flex flex-col space-y-4">
+    <div class="w-full lg:w-1/3 px-4 pt-0 flex flex-col space-y-4">
         {{-- Success/Error Messages --}}
         <div x-data="{ show: false, message: '', type: '' }"
              x-init="$watch('show', value => { if (value) setTimeout(() => show = false, 3000) });
@@ -23,14 +23,13 @@
         </div>
 
         {{-- Client Management --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-1">
             
             @livewire('pos-client-manager')
         </div>
 
         {{-- Product Search --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 flex-grow">
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Búsqueda de Productos</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-0 flex-grow">
             @livewire('pos-product-manager')
         </div>
     </div>
