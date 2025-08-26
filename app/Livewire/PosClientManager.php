@@ -11,6 +11,8 @@ class PosClientManager extends Component
     public $searchTerm = '';
     public $selectedClient = null;
     public $showCreateClientModal = false;
+    public $isMinimized = false; // New property
+
     public function getSearchResultsProperty()
     {
         if (empty($this->searchTerm)) {
@@ -28,6 +30,7 @@ class PosClientManager extends Component
         $this->selectedClient = Cliente::find($clientId);
         $this->searchTerm = ''; // Clear search term
         $this->searchResults = []; // Clear search results
+        $this->isMinimized = true; // Set to true to minimize
     }
 
     public function openCreateClientModal()
