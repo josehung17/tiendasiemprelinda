@@ -53,8 +53,8 @@
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($cartItems as $index => $item)
-                                <tr wire:click="openProductDetailModal({{ $item['product_id'] }})" class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td wire:click="openProductDetailModal({{ $item['product_id'] }})" class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center space-x-2 cursor-pointer">
                                         @if($item['ruta_imagen'])
                                             <img src="{{ asset('storage/' . $item['ruta_imagen']) }}" alt="{{ $item['nombre'] }}" class="w-8 h-8 object-cover rounded">
                                         @else
@@ -136,6 +136,6 @@
     </div>
 
     @if($showProductDetailModal)
-        @livewire('product-modal', ['productId' => $selectedProductIdForDetail], key($selectedProductIdForDetail))
+        @livewire('product-modal', ['productId' => $selectedProductIdForDetail], key($selectedProductIdForDetail . '-' . now()->timestamp))
     @endif
 </div>

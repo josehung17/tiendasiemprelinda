@@ -75,7 +75,10 @@
                         POS
                     </x-nav-link>
                     @endcan
-                    
+                    {{-- Botón para actualizar la tasa de cambio --}}
+                    <div class="flex items-center">
+                        <livewire:actualizar-tasa-boton />
+                    </div>
                 </div>
             </div>
 
@@ -176,6 +179,10 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     Perfil
                 </x-responsive-nav-link>
+                {{-- Botón para actualizar la tasa de cambio (Responsive) --}}
+                <div class="px-4 py-2">
+                    <livewire:actualizar-tasa-boton />
+                </div>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

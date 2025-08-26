@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\TasaDeCambio;
 
 class PosMain extends Component
 {
@@ -20,33 +21,25 @@ class PosMain extends Component
 
     public function mount()
     {
-        $this->fetchBolivarExchangeRate();
+        $this->fetchBolivarExchangeRateFromDatabase();
     }
 
-    public function fetchBolivarExchangeRate()
+    public function fetchBolivarExchangeRateFromDatabase()
     {
         try {
-            $response = Http::get('https://bcv-api.rafnixg.dev/rates/');
-            if ($response->successful()) {
-                $data = $response->json();
-                // Correctly access the 'dollar' key from the API response
-                if (isset($data['dollar'])) {
-                    $this->bolivarExchangeRate = (float) $data['dollar'];
-                    $this->dispatch('success', 'Tipo de cambio del Bolívar actualizado.');
-                } else {
-                    // Log the unexpected format for debugging
-                    \Log::error('BCV API: Unexpected data format (missing "dollar" key)', ['response_data' => $data]);
-                    $this->dispatch('error', 'No se pudo obtener el tipo de cambio del Bolívar (formato inesperado). Por favor, intente de nuevo.');
-                }
+            $tasa = \App\Models\TasaDeCambio::where('moneda', 'USD')->latest('fecha_actualizacion')->first();
+
+            if ($tasa) {
+                $this->bolivarExchangeRate = (float) $tasa->tasa;
+                $this->dispatch('success', 'Tipo de cambio del Bolívar cargado desde la base de datos (Actualizado el: ' . $tasa->fecha_actualizacion->format('d/m/Y') . ').');
             } else {
-                // Log the unsuccessful response for debugging
-                \Log::error('BCV API: Unsuccessful response', ['status' => $response->status(), 'body' => $response->body()]);
-                $this->dispatch('error', 'Error al obtener el tipo de cambio del Bolívar: ' . $response->status() . '. Por favor, intente de nuevo.');
+                $this->dispatch('error', 'No se encontró un tipo de cambio para el Bolívar en la base de datos. Por favor, actualice la tasa manualmente.');
+                $this->bolivarExchangeRate = null; // Ensure it's null if no rate is found
             }
         } catch (\Exception $e) {
-            // Log the exception for debugging
-            \Log::error('BCV API: Connection error', ['exception' => $e->getMessage()]);
-            $this->dispatch('error', 'Error de conexión al obtener el tipo de cambio del Bolívar. Por favor, verifique su conexión a internet.');
+            \Log::error('Error al cargar la tasa de cambio desde la base de datos: ' . $e->getMessage());
+            $this->dispatch('error', 'Error al cargar el tipo de cambio del Bolívar desde la base de datos.');
+            $this->bolivarExchangeRate = null;
         }
     }
 
