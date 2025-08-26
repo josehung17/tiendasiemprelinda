@@ -10,7 +10,31 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @can('edit products')
-                    <form method="POST" action="{{ route('productos.update', $producto->id) }}" enctype="multipart/form-data" class="space-y-6">
+                    <form method="POST" action="{{ route('productos.update', $producto->id) }}" enctype="multipart/form-data" class="space-y-6" x-data="{
+                        precio_compra: {{ old('precio_compra', $producto->precio_compra ?? 0) }},
+                        margen_ganancia: {{ old('margen_ganancia', $producto->margen_ganancia ?? 0) }},
+                        precio_venta: {{ old('precio', $producto->precio ?? 0) }},
+                        calcularPrecioVenta() {
+                            let pc = parseFloat(this.precio_compra);
+                            let mg = parseFloat(this.margen_ganancia);
+                            if (!isNaN(pc) && !isNaN(mg) && mg < 100) {
+                                this.precio_venta = (pc / (1 - mg / 100)).toFixed(2);
+                            } else if (!isNaN(pc)) {
+                                this.precio_venta = pc.toFixed(2);
+                            } else {
+                                this.precio_venta = 0;
+                            }
+                        },
+                        calcularMargenGanancia() {
+                            let pc = parseFloat(this.precio_compra);
+                            let pv = parseFloat(this.precio_venta);
+                            if (!isNaN(pc) && !isNaN(pv) && pv > 0) {
+                                this.margen_ganancia = ((1 - (pc / pv)) * 100).toFixed(2);
+                            } else {
+                                this.margen_ganancia = 0;
+                            }
+                        }
+                    }" x-init="calcularPrecioVenta()">
                         @csrf
                         @method('PUT')
 
@@ -49,8 +73,26 @@
                         </div>
 
                         <div>
-                            <x-input-label for="precio" :value="__('Precio')" />
-                            <x-text-input id="precio" name="precio" type="number" step="0.01" class="mt-1 block w-full" required value="{{ old('precio', $producto->precio) }}" />
+                            <x-input-label for="stock" :value="__('Stock Actual')" />
+                            <x-text-input id="stock" name="stock" type="number" class="mt-1 block w-full" value="{{ old('stock', $producto->stock) }}" readonly />
+                            <x-input-error class="mt-2" :messages="$errors->get('stock')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="precio_compra" :value="__('Precio de Compra')" />
+                            <x-text-input id="precio_compra" name="precio_compra" type="number" step="0.01" class="mt-1 block w-full" required x-model.number="precio_compra" @input="calcularPrecioVenta" />
+                            <x-input-error class="mt-2" :messages="$errors->get('precio_compra')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="margen_ganancia" :value="__('Margen de Ganancia (%)')" />
+                            <x-text-input id="margen_ganancia" name="margen_ganancia" type="number" step="0.01" class="mt-1 block w-full" required x-model.number="margen_ganancia" @input="calcularPrecioVenta" />
+                            <x-input-error class="mt-2" :messages="$errors->get('margen_ganancia')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="precio" :value="__('Precio de Venta')" />
+                            <x-text-input id="precio" name="precio" type="number" step="0.01" class="mt-1 block w-full" required x-model.number="precio_venta" @input="calcularMargenGanancia" />
                             <x-input-error class="mt-2" :messages="$errors->get('precio')" />
                         </div>
 

@@ -15,42 +15,64 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Dashboard
                     </x-nav-link>
-                </div>
-                @can('view marcas')
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('marcas.index')" :active="request()->routeIs('marcas.index')">
-                        Marcas
-                    </x-nav-link>
-                </div>
-                @endcan
-                @can('view categories')
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('categorias.index')" :active="request()->routeIs('categorias.index')">
-                        Categorias
-                    </x-nav-link>
-                </div>
-                @endcan
-                @can('view products')
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.index')">
-                        Productos
-                    </x-nav-link>
-                </div>
-                @endcan
-                @can('view users')
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <div class="flex items-center">
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 pt-1 pb-1 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>Gestión Productos</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                @can('view marcas')
+                                <x-dropdown-link :href="route('marcas.index')">
+                                    Marcas
+                                </x-dropdown-link>
+                                @endcan
+                                @can('view categories')
+                                <x-dropdown-link :href="route('categorias.index')">
+                                    Categorias
+                                </x-dropdown-link>
+                                @endcan
+                                @can('view products')
+                                <x-dropdown-link :href="route('productos.index')">
+                                    Productos
+                                </x-dropdown-link>
+                                @endcan
+                                @can('manage stock')
+                                <x-dropdown-link :href="route('stock-movements.index')">
+                                    Movimientos de Stock
+                                </x-dropdown-link>
+                                @endcan
+                            @can('view proveedores')
+                                <x-dropdown-link :href="route('proveedores.index')">
+                                    Proveedores
+                                </x-dropdown-link>
+                                @endcan
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                    
+                    
+                    
+                    @can('view users')
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
                         Usuarios
                     </x-nav-link>
-                </div>
-                @endcan
-                @can('view clients')
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    @endcan
+                    @can('view clients')
                     <x-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.index')">
                         Clientes
                     </x-nav-link>
+                    @endcan
+                    
+                    
                 </div>
-                @endcan
             </div>
 
             <!-- Settings Dropdown -->
@@ -105,31 +127,38 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Panel
             </x-responsive-nav-link>
-            @can('view marcas')
-            <x-responsive-nav-link :href="route('marcas.index')" :active="request()->routeIs('marcas.index')">
-                Marcas
-            </x-responsive-nav-link>
-            @endcan
-            @can('view categories')
-            <x-responsive-nav-link :href="route('categorias.index')" :active="request()->routeIs('categorias.index')">
-                Categorias
-            </x-responsive-nav-link>
-            @endcan
-            @can('view products')
-            <x-responsive-nav-link :href="route('productos.index')" :active="request()->routeIs('productos.index')">
-                Productos
-            </x-responsive-nav-link>
-            @endcan
-            @can('view users')
-            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
-                Usuarios
-            </x-responsive-nav-link>
-            @endcan
-            @can('view clients')
-            <x-responsive-nav-link :href="route('clientes.index')" :active="request()->routeIs('clientes.index')">
-                Clientes
-            </x-responsive-nav-link>
-            @endcan
+            <div x-data="{ open: false }" class="w-full">
+                <x-responsive-nav-link @click="open = ! open" class="w-full text-left flex items-center">
+                    Gestión Productos
+                    <svg class="float-right h-4 w-4 transform" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </x-responsive-nav-link>
+
+                <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="space-y-1">
+                    @can('view marcas')
+                    <x-responsive-nav-link :href="route('marcas.index')">
+                        Marcas
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view categories')
+                    <x-responsive-nav-link :href="route('categorias.index')">
+                        Categorias
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view products')
+                    <x-responsive-nav-link :href="route('productos.index')">
+                        Productos
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('manage stock')
+                    <x-responsive-nav-link :href="route('stock-movements.index')">
+                        Movimientos de Stock
+                    </x-responsive-nav-link>
+                    @endcan
+                    
+                </div>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->
