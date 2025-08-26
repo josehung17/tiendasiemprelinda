@@ -22,16 +22,16 @@
             </span>
         </div>
 
-        {{-- Product Search --}}
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 flex-grow">
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Búsqueda de Productos</h3>
-            @livewire('pos-product-manager')
-        </div>
-
         {{-- Client Management --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
             <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Gestión de Clientes</h3>
             @livewire('pos-client-manager')
+        </div>
+
+        {{-- Product Search --}}
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 flex-grow">
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Búsqueda de Productos</h3>
+            @livewire('pos-product-manager')
         </div>
     </div>
 

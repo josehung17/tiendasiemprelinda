@@ -7,7 +7,7 @@
     @if(!empty($searchTerm) && $this->searchResults->count() > 0)
         <ul class="mt-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-y-auto">
             @foreach($this->searchResults as $product)
-                <li wire:click="addProductToCart({{ $product->id }}, quantities.{{ $product->id }} || 1)" class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center space-x-3">
+                <li wire:click="addProductToCart({{ $product->id }})" class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center space-x-3">
                     @if($product->ruta_imagen)
                         <img src="{{ asset('storage/' . $product->ruta_imagen) }}" alt="{{ $product->nombre }}" class="w-10 h-10 object-cover rounded">
                     @else
