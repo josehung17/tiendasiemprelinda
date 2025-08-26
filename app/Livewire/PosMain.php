@@ -11,6 +11,21 @@ class PosMain extends Component
 {
     public $selectedClient = null;
     public $cartItems = [];
+    public $showProductDetailModal = false;
+    public $selectedProductIdForDetail;
+
+    #[On('productModalClosed')]
+    public function handleProductModalClosed()
+    {
+        $this->showProductDetailModal = false;
+        $this->selectedProductIdForDetail = null;
+    }
+
+    public function openProductDetailModal($productId)
+    {
+        $this->selectedProductIdForDetail = $productId;
+        $this->showProductDetailModal = true;
+    }
 
     #[On('clientSelected')]
     public function clientSelected($clientId)
@@ -56,6 +71,7 @@ class PosMain extends Component
             'precio' => $product->precio,
             'quantity' => $quantity,
             'subtotal' => $product->precio * $quantity,
+            'ruta_imagen' => $product->ruta_imagen, // Add product image path
         ];
 
         $this->dispatch('success', $product->nombre . ' agregado al carrito.');

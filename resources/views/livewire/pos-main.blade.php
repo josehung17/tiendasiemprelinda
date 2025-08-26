@@ -53,17 +53,26 @@
                         </thead>
                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($cartItems as $index => $item)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $item['nombre'] }}<br>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">${{ number_format($item['precio'], 2) }} c/u</span>
+                                <tr wire:click="openProductDetailModal({{ $item['product_id'] }})" class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                                        @if($item['ruta_imagen'])
+                                            <img src="{{ asset('storage/' . $item['ruta_imagen']) }}" alt="{{ $item['nombre'] }}" class="w-8 h-8 object-cover rounded">
+                                        @else
+                                            <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded">
+                                                <span class="text-gray-500 dark:text-gray-400 text-xs">No Img</span>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            {{ $item['nombre'] }}<br>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">${{ number_format($item['precio'], 2) }} c/u</span>
+                                        </div>
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                         <input type="number" wire:model.live="cartItems.{{ $index }}.quantity" wire:change="updateCartItemQuantity({{ $index }}, $event.target.value)" min="1" class="w-20 text-center border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${{ number_format($item['subtotal'], 2) }}</td>
                                     <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
-                                        <button wire:click="removeCartItem({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-lg">
+                                        <button wire:click="removeCartItem({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">
                                             &times;
                                         </button>
                                     </td>
@@ -91,4 +100,8 @@
             </div>
         </div>
     </div>
+
+    @if($showProductDetailModal)
+        @livewire('product-modal', ['productId' => $selectedProductIdForDetail], key($selectedProductIdForDetail))
+    @endif
 </div>
