@@ -23,7 +23,10 @@ class Producto extends Model
         'descuento',
         'precio_descuento',
         'marca_id',
-        'categoria_id'
+        'categoria_id',
+        'stock',
+        'precio_compra',
+        'margen_ganancia'
     ];
 
     /**

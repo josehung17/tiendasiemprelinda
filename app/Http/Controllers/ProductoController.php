@@ -43,6 +43,9 @@ class ProductoController extends Controller
             'ruta_imagen' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'marca_id' => 'required|exists:marcas,id',
             'categoria_id' => 'required|exists:categorias,id',
+            'stock' => 'required|integer|min:0',
+            'precio_compra' => 'required|numeric|min:0',
+            'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
 
         // 2. Maneja la subida del archivo de imagen
@@ -99,6 +102,9 @@ class ProductoController extends Controller
             'ruta_imagen' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'marca_id' => 'required|exists:marcas,id',
             'categoria_id' => 'required|exists:categorias,id',
+            'stock' => 'required|integer|min:0',
+            'precio_compra' => 'required|numeric|min:0',
+            'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
 
         // 2. Maneja la subida de una nueva imagen
