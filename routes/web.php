@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class);
     });
 
+    Route::middleware(['permission:access pos'])->group(function () {
+        Route::get('/pos', App\Livewire\PosMain::class)->name('pos.index');
+    });
+
     // Route for POS Client Test
     Route::get('/pos/client-test', function () {
         return view('pos.client-test');

@@ -45,6 +45,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view proveedores',
             'manage stock',
             'assign roles',
+            'access pos',
         ];
 
         foreach ($permissions as $permission) {
@@ -80,6 +81,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view proveedores',
                 'manage stock',
                 'assign roles',
+                'access pos',
             ],
             'editor' => [
                 'edit products',
@@ -87,6 +89,9 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
             'viewer' => [
                 'view products',
+            ],
+            'vendedor' => [
+                'access pos',
             ],
         ];
 

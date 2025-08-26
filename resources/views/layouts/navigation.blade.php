@@ -70,7 +70,11 @@
                         Clientes
                     </x-nav-link>
                     @endcan
-                    
+                    @can('access pos')
+                    <x-nav-link :href="route('pos.index')" :active="request()->routeIs('pos.index')">
+                        POS
+                    </x-nav-link>
+                    @endcan
                     
                 </div>
             </div>
