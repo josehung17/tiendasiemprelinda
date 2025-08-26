@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\Producto;
 use App\Models\Cliente;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PosMain extends Component
 {
@@ -13,6 +15,45 @@ class PosMain extends Component
     public $cartItems = [];
     public $showProductDetailModal = false;
     public $selectedProductIdForDetail;
+    public $bolivarExchangeRate = null; // To store the fetched exchange rate
+    public $showPricesInBolivar = false; // To toggle currency display
+
+    public function mount()
+    {
+        $this->fetchBolivarExchangeRate();
+    }
+
+    public function fetchBolivarExchangeRate()
+    {
+        try {
+            $response = Http::get('https://bcv-api.rafnixg.dev/rates/');
+            if ($response->successful()) {
+                $data = $response->json();
+                // Correctly access the 'dollar' key from the API response
+                if (isset($data['dollar'])) {
+                    $this->bolivarExchangeRate = (float) $data['dollar'];
+                    $this->dispatch('success', 'Tipo de cambio del Bolívar actualizado.');
+                } else {
+                    // Log the unexpected format for debugging
+                    \Log::error('BCV API: Unexpected data format (missing "dollar" key)', ['response_data' => $data]);
+                    $this->dispatch('error', 'No se pudo obtener el tipo de cambio del Bolívar (formato inesperado). Por favor, intente de nuevo.');
+                }
+            } else {
+                // Log the unsuccessful response for debugging
+                \Log::error('BCV API: Unsuccessful response', ['status' => $response->status(), 'body' => $response->body()]);
+                $this->dispatch('error', 'Error al obtener el tipo de cambio del Bolívar: ' . $response->status() . '. Por favor, intente de nuevo.');
+            }
+        } catch (\Exception $e) {
+            // Log the exception for debugging
+            \Log::error('BCV API: Connection error', ['exception' => $e->getMessage()]);
+            $this->dispatch('error', 'Error de conexión al obtener el tipo de cambio del Bolívar. Por favor, verifique su conexión a internet.');
+        }
+    }
+
+    public function toggleCurrencyDisplay()
+    {
+        $this->showPricesInBolivar = !$this->showPricesInBolivar;
+    }
 
     #[On('productModalClosed')]
     public function handleProductModalClosed()
@@ -115,6 +156,14 @@ class PosMain extends Component
     public function getTotalProperty()
     {
         return array_sum(array_column($this->cartItems, 'subtotal'));
+    }
+
+    public function getBolivarTotalProperty()
+    {
+        if ($this->bolivarExchangeRate === null) {
+            return null;
+        }
+        return $this->total * $this->bolivarExchangeRate;
     }
 
     public function render()

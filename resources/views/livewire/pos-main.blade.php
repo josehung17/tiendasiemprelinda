@@ -64,13 +64,25 @@
                                         @endif
                                         <div>
                                             {{ $item['nombre'] }}<br>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">${{ number_format($item['precio'], 2) }} c/u</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            @if($showPricesInBolivar && $bolivarExchangeRate !== null)
+                                                Bs. {{ number_format($item['precio'] * $bolivarExchangeRate, 2) }} c/u
+                                            @else
+                                                ${{ number_format($item['precio'], 2) }} c/u
+                                            @endif
+                                        </span>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                         <input type="number" wire:model.live="cartItems.{{ $index }}.quantity" wire:change="updateCartItemQuantity({{ $index }}, $event.target.value)" min="1" class="w-20 text-center border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                     </td>
-                                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${{ number_format($item['subtotal'], 2) }}</td>
+                                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                        @if($showPricesInBolivar && $bolivarExchangeRate !== null)
+                                            Bs. {{ number_format($item['subtotal'] * $bolivarExchangeRate, 2) }}
+                                        @else
+                                            ${{ number_format($item['subtotal'], 2) }}
+                                        @endif
+                                    </td>
                                     <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                                         <button wire:click="removeCartItem({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">
                                             &times;
@@ -89,8 +101,30 @@
             <div class="mt-auto pt-4">
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-xl font-semibold text-gray-800 dark:text-gray-200">Total:</span>
-                    <span class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">${{ number_format($this->total, 2) }}</span>
+                    <span class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                        @if($showPricesInBolivar && $bolivarExchangeRate !== null)
+                            Bs. {{ number_format($this->bolivarTotal, 2) }}
+                        @else
+                            ${{ number_format($this->total, 2) }}
+                        @endif
+                    </span>
                 </div>
+
+                @if($bolivarExchangeRate !== null)
+                    <div class="flex justify-end mb-4 space-x-2">
+                        <button wire:click="toggleCurrencyDisplay" class="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                            @if($showPricesInBolivar)
+                                Mostrar en $
+                            @else
+                                Mostrar en Bs.
+                            @endif
+                        </button>
+                        <button wire:click="fetchBolivarExchangeRate" class="px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
+                            Actualizar Tasa
+                        </button>
+                    </div>
+                @endif
+
                 <button type="button" class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
                     Procesar Venta
                 </button>
