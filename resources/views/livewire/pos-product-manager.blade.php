@@ -9,7 +9,7 @@
             @foreach($this->searchResults as $product)
                 <li wire:click="addProductToCart({{ $product->id }})" class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center space-x-3">
                     @if($product->ruta_imagen)
-                        <img src="{{ asset('storage/' . $product->ruta_imagen) }}" alt="{{ $product->nombre }}" class="w-10 h-10 object-cover rounded">
+                        <img src="{{ asset('storage/' . $product->ruta_imagen) }}" alt="{{ $product->nombre }}" class="w-12 h-12 object-cover rounded">
                     @else
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded">
                             <span class="text-gray-500 dark:text-gray-400 text-xs">No Img</span>
