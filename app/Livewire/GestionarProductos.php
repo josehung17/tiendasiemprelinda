@@ -11,6 +11,14 @@ class GestionarProductos extends Component
     use WithPagination;
 
     public $search = '';
+    public $selectedProductId;
+
+    protected $listeners = ['productModalClosed' => 'handleProductModalClosed'];
+
+    public function handleProductModalClosed()
+    {
+        $this->selectedProductId = null;
+    }
 
     public function render()
     {
@@ -32,5 +40,10 @@ class GestionarProductos extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function openProductModal($productId)
+    {
+        $this->selectedProductId = $productId;
     }
 }
