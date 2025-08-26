@@ -17,6 +17,7 @@ class PosProductManager extends Component
         }
 
         return Producto::where('nombre', 'like', '%' . $this->searchTerm . '%')
+                        ->orderByDesc('stock') // Order by stock in descending order
                         ->limit(10)
                         ->get();
     }
