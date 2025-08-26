@@ -64,7 +64,7 @@
                     </div>
                 </div>
             @else
-                <p class="mt-4">Cargando producto...</p>
+                <p class="mt-4 text-gray-500 dark:text-gray-400">Cargando producto...</p>
             @endif
 
             <div class="mt-6 flex justify-end">

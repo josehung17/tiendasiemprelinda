@@ -1,7 +1,7 @@
 <div>
     <div class="mb-4">
         <label for="productSearch" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Buscar Producto por Nombre</label>
-        <input type="text" wire:model.live.debounce.300ms="searchTerm" id="productSearch" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-600 focus:ring-opacity-50" placeholder="Nombre del Producto">
+        <input type="text" wire:model.live.debounce.300ms="searchTerm" id="productSearch" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-600 dark:focus:ring-opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Nombre del Producto">
     </div>
 
     @if(!empty($searchTerm) && $this->searchResults->count() > 0)

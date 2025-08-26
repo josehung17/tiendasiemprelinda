@@ -13,14 +13,14 @@
                 </button>
             </div>
             <div class="mt-1 flex rounded-md shadow-sm">
-                <input type="text" wire:model.live.debounce.300ms="searchTerm" id="clientSearch" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-600 dark:focus:ring-opacity-50" placeholder="DNI o Nombre del Cliente">
+                <input type="text" wire:model.live.debounce.300ms="searchTerm" id="clientSearch" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-600 dark:focus:ring-opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500" placeholder="DNI o Nombre del Cliente">
             </div>
         </div>
 
         @if(!empty($searchTerm) && $this->searchResults && count($this->searchResults) > 0)
             <ul class="mt-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 shadow-lg max-h-60 overflow-y-auto">
                 @foreach($this->searchResults as $client)
-                    <li wire:click="selectClient({{ $client->id }})" class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                    <li wire:click="selectClient({{ $client->id }})" class="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 text-gray-900 dark:text-gray-100">
                         {{ $client->nombre }} ({{ $client->numero_documento }})
                     </li>
                 @endforeach
@@ -31,20 +31,20 @@
 
         <div x-show="isMinimized" @click="isMinimized = !isMinimized; $wire.isMinimized = isMinimized" class="cursor-pointer">
             @if($selectedClient)
-                <p class="text-sm font-semibold my-0">Cliente: {{ $selectedClient->nombre }} ({{ $selectedClient->numero_documento }})</p>
+                <p class="text-sm font-semibold my-0 text-gray-900 dark:text-gray-200">Cliente: {{ $selectedClient->nombre }} ({{ $selectedClient->numero_documento }})</p>
             @else
-                <p class="text-sm font-semibold my-0">Cliente: Consumidor Final</p>
+                <p class="text-sm font-semibold my-0 text-gray-900 dark:text-gray-200">Cliente: Consumidor Final</p>
             @endif
         </div>
 
         <div x-show="!isMinimized">
             <div class="mb-1">
                 @if($selectedClient)
-                    <p class="text-base font-semibold">Cliente Seleccionado:</p>
-                    <p class="text-md">{{ $selectedClient->nombre }} ({{ $selectedClient->numero_documento }})</p>
+                    <p class="text-base font-semibold text-gray-900 dark:text-gray-200">Cliente Seleccionado:</p>
+                    <p class="text-md text-gray-900 dark:text-gray-200">{{ $selectedClient->nombre }} ({{ $selectedClient->numero_documento }})</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedClient->telefono }}</p>
                 @else
-                    <p class="text-base font-semibold">Cliente: Consumidor Final</p>
+                    <p class="text-base font-semibold text-gray-900 dark:text-gray-200">Cliente: Consumidor Final</p>
                 @endif
             </div>
 
