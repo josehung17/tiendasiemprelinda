@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -46,6 +47,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage stock',
             'assign roles',
             'access pos',
+            'view metodos-pago',
+            'create metodos-pago',
+            'edit metodos-pago',
+            'delete metodos-pago',
+            'view tasa-de-cambio',
+            'view facturas-compra',
+            'create facturas-compra',
+            'edit facturas-compra',
+            'delete facturas-compra',
         ];
 
         foreach ($permissions as $permission) {
@@ -82,6 +92,15 @@ class RolesAndPermissionsSeeder extends Seeder
                 'manage stock',
                 'assign roles',
                 'access pos',
+                'view metodos-pago',
+                'create metodos-pago',
+                'edit metodos-pago',
+                'delete metodos-pago',
+                'view tasa-de-cambio',
+                'view facturas-compra',
+                'create facturas-compra',
+                'edit facturas-compra',
+                'delete facturas-compra',
             ],
             'editor' => [
                 'edit products',

@@ -36,6 +36,14 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class);
+        Route::resource('metodos-pago', App\Http\Controllers\MetodoPagoController::class)->parameters([
+            'metodos-pago' => 'metodo_pago',
+        ]);
+        Route::get('/tasa-de-cambio', function () {
+            return view('tasa_de_cambio.index');
+        })->name('tasa-de-cambio.index');
+        Route::get('/facturas-compra', App\Livewire\GestionarFacturasCompra::class)->name('facturas-compra.index');
+        Route::get('/facturas-compra/create', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.create');
     });
 
     Route::middleware(['permission:access pos'])->group(function () {
