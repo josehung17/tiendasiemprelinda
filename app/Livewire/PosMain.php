@@ -31,14 +31,14 @@ class PosMain extends Component
 
             if ($tasa) {
                 $this->bolivarExchangeRate = (float) $tasa->tasa;
-                $this->dispatch('success', 'Tipo de cambio del Bolívar cargado desde la base de datos (Actualizado el: ' . $tasa->fecha_actualizacion->format('d/m/Y') . ').');
+                $this->dispatch('app-notification-success', message: 'Tipo de cambio del Bolívar cargado desde la base de datos (Actualizado el: ' . $tasa->fecha_actualizacion->format('d/m/Y') . ').');
             } else {
-                $this->dispatch('error', 'No se encontró un tipo de cambio para el Bolívar en la base de datos. Por favor, actualice la tasa manualmente.');
+                $this->dispatch('app-notification-error', message: 'No se encontró un tipo de cambio para el Bolívar en la base de datos. Por favor, actualice la tasa manualmente.');
                 $this->bolivarExchangeRate = null; // Ensure it's null if no rate is found
             }
         } catch (\Exception $e) {
             \Log::error('Error al cargar la tasa de cambio desde la base de datos: ' . $e->getMessage());
-            $this->dispatch('error', 'Error al cargar el tipo de cambio del Bolívar desde la base de datos.');
+            $this->dispatch('app-notification-error', message: 'Error al cargar el tipo de cambio del Bolívar desde la base de datos.');
             $this->bolivarExchangeRate = null;
         }
     }
@@ -73,7 +73,7 @@ class PosMain extends Component
         $product = Producto::find($productId);
 
         if (!$product) {
-            $this->dispatch('error', 'Producto no encontrado.');
+            $this->dispatch('app-notification-error', message: 'Producto no encontrado.');
             return;
         }
 
@@ -83,19 +83,19 @@ class PosMain extends Component
                 // Update quantity if already in cart
                 $newQuantity = $item['quantity'] + $quantity;
                 if ($product->stock < $newQuantity) {
-                    $this->dispatch('error', 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
+                    $this->dispatch('app-notification-error', message: 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
                     return;
                 }
                 $this->cartItems[$index]['quantity'] = $newQuantity;
                 $this->cartItems[$index]['subtotal'] = $newQuantity * $product->precio;
-                $this->dispatch('success', 'Cantidad de ' . $product->nombre . ' actualizada en el carrito.');
+                $this->dispatch('app-notification-success', message: 'Cantidad de ' . $product->nombre . ' actualizada en el carrito.');
                 return;
             }
         }
 
         // Add new product to cart
         if ($product->stock < $quantity) {
-            $this->dispatch('error', 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
+            $this->dispatch('app-notification-error', message: 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
             return;
         }
 
@@ -108,7 +108,7 @@ class PosMain extends Component
             'ruta_imagen' => $product->ruta_imagen, // Add product image path
         ];
 
-        $this->dispatch('success', $product->nombre . ' agregado al carrito.');
+        $this->dispatch('app-notification-success', message: $product->nombre . ' agregado al carrito.');
     }
 
     public function removeCartItem($index)
@@ -117,7 +117,7 @@ class PosMain extends Component
             $productName = $this->cartItems[$index]['nombre'];
             unset($this->cartItems[$index]);
             $this->cartItems = array_values($this->cartItems); // Re-index the array
-            $this->dispatch('success', $productName . ' eliminado del carrito.');
+            $this->dispatch('app-notification-success', message: $productName . ' eliminado del carrito.');
         }
     }
 
@@ -126,23 +126,23 @@ class PosMain extends Component
         if (isset($this->cartItems[$index])) {
             $product = Producto::find($this->cartItems[$index]['product_id']);
             if (!$product) {
-                $this->dispatch('error', 'Producto no encontrado.');
+                $this->dispatch('app-notification-error', message: 'Producto no encontrado.');
                 return;
             }
 
             if (!is_numeric($quantity) || $quantity <= 0) {
-                $this->dispatch('error', 'La cantidad debe ser un número positivo.');
+                $this->dispatch('app-notification-error', message: 'La cantidad debe ser un número positivo.');
                 return;
             }
 
             if ($product->stock < $quantity) {
-                $this->dispatch('error', 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
+                $this->dispatch('app-notification-error', message: 'Stock insuficiente para ' . $product->nombre . '. Stock disponible: ' . $product->stock);
                 return;
             }
 
             $this->cartItems[$index]['quantity'] = $quantity;
             $this->cartItems[$index]['subtotal'] = $quantity * $product->precio;
-            $this->dispatch('success', 'Cantidad de ' . $product->nombre . ' actualizada.');
+            $this->dispatch('app-notification-success', message: 'Cantidad de ' . $product->nombre . ' actualizada.');
         }
     }
 

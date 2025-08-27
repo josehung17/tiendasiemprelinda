@@ -51,6 +51,8 @@ class GestionarMovimientosStock extends Component
                 $this->selectedProductName = $product->nombre;
             }
         }
+        // Ensure precioCompraUnitario is null on initial load unless explicitly set
+        $this->precioCompraUnitario = null;
     }
 
     public function getProductSearchResultsProperty()
@@ -86,12 +88,12 @@ class GestionarMovimientosStock extends Component
         if ($this->tipoMovimiento === 'entrada-reposicion' && $this->precioCompraUnitario !== null) {
             // Compare with current product purchase price
             if ($producto->precio_compra != $this->precioCompraUnitario) {
-                // Prices are different, open confirmation modal
+                 // Prices are different, open confirmation modal
                 $this->dispatch('openConfirmPurchasePriceModal',
                     $this->selectedProductId,
                     $producto->precio_compra,
                     $this->precioCompraUnitario
-                )->to('confirm-purchase-price-update');
+                );
                 return; // Stop execution here, wait for modal confirmation
             }
         }

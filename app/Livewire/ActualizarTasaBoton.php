@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Http;
 
 class ActualizarTasaBoton extends Component
 {
-    public $message = '';
 
     public function actualizarTasa()
     {
@@ -21,7 +20,7 @@ class ActualizarTasaBoton extends Component
                                     ->first();
 
         if ($tasaExistente) {
-            $this->message = 'La tasa de cambio ya fue actualizada hoy.';
+            $this->dispatch('app-notification-error', message: 'La tasa de cambio ya fue actualizada hoy.');
             return;
         }
 
@@ -34,23 +33,23 @@ class ActualizarTasaBoton extends Component
                 if (isset($data['dollar'])) {
                     $nuevaTasa = (float) $data['dollar'];
                 } else {
-                    $this->message = 'Error: Formato de datos inesperado de la API (falta la clave "dollar").';
+                    $this->dispatch('app-notification-error', message: 'Error: Formato de datos inesperado de la API.');
                     \Log::error('BCV API: Unexpected data format (missing "dollar" key)', ['response_data' => $data]);
                     return;
                 }
             } else {
-                $this->message = 'Error al obtener la tasa de la API: ' . $response->status() . '.';
+                $this->dispatch('app-notification-error', message: 'Error al obtener la tasa de la API: ' . $response->status() . '.');
                 \Log::error('BCV API: Unsuccessful response', ['status' => $response->status(), 'body' => $response->body()]);
                 return;
             }
         } catch (\Exception $e) {
-            $this->message = 'Error de conexión al obtener la tasa de la API: ' . $e->getMessage();
+            $this->dispatch('app-notification-error', message: 'Error de conexión al obtener la tasa de la API.');
             \Log::error('BCV API: Connection error', ['exception' => $e->getMessage()]);
             return;
         }
 
         if ($nuevaTasa === null) {
-            $this->message = 'No se pudo obtener la tasa de cambio de la API.';
+            $this->dispatch('app-notification-error', message: 'No se pudo obtener la tasa de cambio de la API.');
             return;
         }
 
@@ -63,7 +62,7 @@ class ActualizarTasaBoton extends Component
             ]
         );
 
-        $this->message = 'Tasa de cambio actualizada correctamente a: ' . $nuevaTasa;
+        $this->dispatch('app-notification-success', message: 'Tasa de cambio actualizada a: ' . $nuevaTasa);
     }
 
     public function render()

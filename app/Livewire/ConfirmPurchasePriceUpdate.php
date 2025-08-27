@@ -12,13 +12,7 @@ class ConfirmPurchasePriceUpdate extends Component
     public $newPurchasePrice;
     public $showModal = false;
 
-    public function openModal($productId, $currentPurchasePrice, $newPurchasePrice)
-    {
-        $this->productId = $productId;
-        $this->currentPurchasePrice = $currentPurchasePrice;
-        $this->newPurchasePrice = $newPurchasePrice;
-        $this->showModal = true;
-    }
+    protected $listeners = ['openConfirmPurchasePriceModal' => 'openModal'];
 
     public function closeModal()
     {
@@ -34,5 +28,13 @@ class ConfirmPurchasePriceUpdate extends Component
     public function render()
     {
         return view('livewire.confirm-purchase-price-update');
+    }
+
+    public function openModal($productId, $currentPurchasePrice, $newPurchasePrice)
+    {
+        $this->productId = $productId;
+        $this->currentPurchasePrice = $currentPurchasePrice;
+        $this->newPurchasePrice = $newPurchasePrice;
+        $this->showModal = true;
     }
 }
