@@ -39,6 +39,11 @@ class MarcaController extends Controller
             'ruta_imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
+        // Manual check for unique name
+        if (Marca::where('nombre', $request->nombre)->exists()) {
+            return redirect()->back()->withErrors(['nombre' => 'La marca con este nombre ya existe.'])->withInput();
+        }
+
         if ($request->hasFile('ruta_imagen')) {
             /** @var \Illuminate\Http\UploadedFile $uploadedFile */
             $uploadedFile = $request->file('ruta_imagen');

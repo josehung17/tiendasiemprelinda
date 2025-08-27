@@ -33,7 +33,7 @@ class CategoriaController extends Controller
 
         // Validación directa en el controlador
         $validatedData = $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|unique:categorias,nombre',
             'ruta_imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 

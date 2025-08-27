@@ -24,8 +24,8 @@ class ProductoController extends Controller
      */
     public function create()
     {
-        $categorias = Categoria::all();
-        $marcas = Marca::all();
+        $categorias = Categoria::orderBy('nombre')->get();
+        $marcas = Marca::orderBy('nombre')->get();
         return view('producto.create', compact('categorias', 'marcas'));
     }
 
@@ -40,7 +40,7 @@ class ProductoController extends Controller
             'descripcion' => 'required|string',
             'precio' => 'required|numeric|min:0',
             'precio_descuento' => 'nullable|numeric|min:0', // Añadido para el nuevo campo
-            'ruta_imagen' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'ruta_imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'marca_id' => 'required|exists:marcas,id',
             'categoria_id' => 'required|exists:categorias,id',
             'stock' => 'required|integer|min:0',
@@ -81,8 +81,8 @@ class ProductoController extends Controller
     public function edit(string $id)
     {
         $producto = Producto::findOrFail($id);
-        $categorias = Categoria::all();
-        $marcas = Marca::all();
+        $categorias = Categoria::orderBy('nombre')->get();
+        $marcas = Marca::orderBy('nombre')->get();
         return view('producto.edit', compact('producto', 'categorias', 'marcas'));
     }
 
