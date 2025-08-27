@@ -2,26 +2,6 @@
 
     {{-- Left Column: Product Search & Client Management --}}
     <div class="w-full lg:w-1/3 px-4 pt-0 flex flex-col space-y-4">
-        {{-- Success/Error Messages --}}
-        <div x-data="{ show: false, message: '', type: '' }"
-             x-init="$watch('show', value => { if (value) setTimeout(() => show = false, 3000) });
-                     $wire.on('success', (msg) => { message = msg; type = 'success'; show = true; });
-                     $wire.on('error', (msg) => { message = msg; type = 'error'; show = true; });"
-             x-show="show"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 transform scale-90"
-             x-transition:enter-end="opacity-100 transform scale-100"
-             x-transition:leave="transition ease-in duration-300"
-             x-transition:leave-start="opacity-100 transform scale-100"
-             x-transition:leave-end="opacity-0 transform scale-90"
-             :class="{ 'bg-green-100 border-green-400 text-green-700': type === 'success', 'bg-red-100 border-red-400 text-red-700': type === 'error' }"
-             class="border px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline" x-text="message"></span>
-            <span class="absolute top-0 bottom-0 right-0 px-4 py-3" @click="show = false">
-                <svg class="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.697l-2.651 3.152a1.2 1.2 0 1 1-1.697-1.697l3.152-2.651-3.152-2.651a1.2 1.2 0 0 1 1.697-1.697L10 8.303l2.651-3.152a1.2 1.2 0 1 1 1.697 1.697L11.697 10l3.152 2.651a1.2 1.2 0 0 1 0 1.698z"/></svg>
-            </span>
-        </div>
-
         {{-- Client Management --}}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-1">
             

@@ -54,6 +54,38 @@
                                     Proveedores
                                 </x-dropdown-link>
                                 @endcan
+                                @can('view facturas-compra')
+                                <x-dropdown-link :href="route('facturas-compra.index')">
+                                    Facturas de Compra
+                                </x-dropdown-link>
+                                @endcan
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                    <div class="flex items-center">
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 pt-1 pb-1 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>Finanzas</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                @can('view metodos-pago')
+                                <x-dropdown-link :href="route('metodos-pago.index')">
+                                    Métodos de Pago
+                                </x-dropdown-link>
+                                @endcan
+                                @can('view tasa-de-cambio') {{-- Assuming a permission for viewing exchange rate --}}
+                                <x-dropdown-link :href="route('tasa-de-cambio.index')">
+                                    Tasa de Cambio
+                                </x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -75,10 +107,6 @@
                         POS
                     </x-nav-link>
                     @endcan
-                    {{-- Botón para actualizar la tasa de cambio --}}
-                    <div class="flex items-center">
-                        <livewire:actualizar-tasa-boton />
-                    </div>
                 </div>
             </div>
 
@@ -134,6 +162,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 Panel
             </x-responsive-nav-link>
+            @can('view users')
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+                Usuarios
+            </x-responsive-nav-link>
+            @endcan
+            
             <div x-data="{ open: false }" class="w-full">
                 <x-responsive-nav-link @click="open = ! open" class="w-full text-left flex items-center">
                     Gestión Productos
@@ -163,7 +197,33 @@
                         Movimientos de Stock
                     </x-responsive-nav-link>
                     @endcan
+                    @can('view facturas-compra')
+                    <x-responsive-nav-link :href="route('facturas-compra.index')">
+                        Facturas de Compra
+                    </x-responsive-nav-link>
+                    @endcan
                     
+                </div>
+            </div>
+            <div x-data="{ open: false }" class="w-full">
+                <x-responsive-nav-link @click="open = ! open" class="w-full text-left flex items-center">
+                    Finanzas
+                    <svg class="float-right h-4 w-4 transform" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </x-responsive-nav-link>
+
+                <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="space-y-1">
+                    @can('view metodos-pago')
+                    <x-responsive-nav-link :href="route('metodos-pago.index')">
+                        Métodos de Pago
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view tasa-de-cambio') {{-- Assuming a permission for viewing exchange rate --}}
+                    <x-responsive-nav-link :href="route('tasa-de-cambio.index')">
+                        Tasa de Cambio
+                    </x-responsive-nav-link>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -179,10 +239,7 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     Perfil
                 </x-responsive-nav-link>
-                {{-- Botón para actualizar la tasa de cambio (Responsive) --}}
-                <div class="px-4 py-2">
-                    <livewire:actualizar-tasa-boton />
-                </div>
+                
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

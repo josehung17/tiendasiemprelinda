@@ -141,4 +141,4 @@
         </div>
     </div>
     <livewire:confirm-purchase-price-update />
-</div>
+ </div>

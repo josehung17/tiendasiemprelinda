@@ -4,7 +4,5 @@
         Tasa
     </button>
 
-    @if ($message)
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ $message }}</p>
-    @endif
+    
 </div>

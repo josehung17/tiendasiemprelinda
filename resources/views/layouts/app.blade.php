@@ -32,7 +32,57 @@
             <main>
                 {{ $slot }}
             </main>
+
+        <!-- Global Toast Notification -->
+        <div x-data="{ show: false, message: '', type: 'success' }"
+             x-init="
+                $watch('show', value => { if (value) setTimeout(() => $data.show = false, 3000) });
+
+                window.addEventListener('app-notification-success', event => {
+                    console.log('Success event received:', event.detail.message);
+                    $data.message = event.detail.message;
+                    $data.type = 'success';
+                    $data.show = true;
+                });
+                window.addEventListener('app-notification-error', event => {
+                    console.log('Error event received:', event.detail.message);
+                    $data.message = event.detail.message;
+                    $data.type = 'error';
+                    $data.show = true;
+                });
+             "
+             style="position: fixed; top: 5rem; right: 1rem; z-index: 50;"
+             x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-90"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-90"
+             class="p-4 rounded-md shadow-lg"
+             :class="{ 'bg-green-500 text-white': type === 'success', 'bg-red-500 text-white': type === 'error' }"
+             role="alert">
+            <span class="font-semibold" x-text="message"></span>
+            <button @click="show = false" class="ml-4 text-xl font-bold leading-none">&times;</button>
         </div>
+
         @livewireScripts
+
+        {{-- Session Flash to Toast Notification Converter --}}
+        @if (session('success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    window.dispatchEvent(new CustomEvent('app-notification-success', { detail: { message: "{{ session('success') }}" } }));
+                });
+            </script>
+        @endif
+        @if (session('error'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    window.dispatchEvent(new CustomEvent('app-notification-error', { detail: { message: "{{ session('error') }}" } }));
+                });
+            </script>
+        @endif
+
     </body>
 </html>
