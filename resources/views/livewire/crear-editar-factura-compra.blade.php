@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent="saveFactura" class="space-y-6">
+    <form wire:submit.prevent="save" class="space-y-6">
         {{-- Proveedor y Fecha --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -14,10 +14,10 @@
             </div>
             <div>
                 <x-input-label for="fecha_factura" :value="__('Fecha de Factura')" />
-                <x-text-input id="fecha_factura" wire:model.live="fecha_factura" type="date" class="mt-1 block w-full" />
+                <x-text-input id="fecha_factura" wire:model.blur="fecha_factura" type="date" class="mt-1 block w-full" />
                 <x-input-error class="mt-2" :messages="$errors->get('fecha_factura')" />
-                @if($tasa_cambio_aplicada > 0)
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Tasa de cambio aplicada: <strong>Bs. {{ number_format($tasa_cambio_aplicada, 4) }}</strong></p>
+                @if($tasa_cambio_aplicada_valor > 0)
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Tasa de cambio aplicada: <strong>Bs. {{ number_format($tasa_cambio_aplicada_valor, 4) }}</strong></p>
                 @else
                     <p class="mt-2 text-sm text-red-600 dark:text-red-400">No se encontró tasa de cambio para esta fecha.</p>
                 @endif
@@ -70,11 +70,11 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{{ $item['nombre'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <x-text-input wire:model.live="productosFactura.{{ $index }}.cantidad" type="number" min="1" class="w-20" />
+                                    <x-text-input wire:model.blur="productosFactura.{{ $index }}.cantidad" type="number" min="1" class="w-20" />
                                     <x-input-error :messages="$errors->get('productosFactura.' . $index . '.cantidad')" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <x-text-input wire:model.live="productosFactura.{{ $index }}.precio_compra_unitario" type="number" step="0.01" min="0" class="w-24" />
+                                    <x-text-input wire:model.blur="productosFactura.{{ $index }}.precio_compra_unitario" type="number" step="0.01" min="0" class="w-24" />
                                     <x-input-error :messages="$errors->get('productosFactura.' . $index . '.precio_compra_unitario')" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">${{ number_format($item['subtotal_usd'], 2) }}</td>
@@ -126,7 +126,7 @@
 
         {{-- Botón de Guardar --}}
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button>{{ __('Registrar Factura y Actualizar Stock') }}</x-primary-button>
+            <x-primary-button>{{ $factura_id ? __('Actualizar Factura') : __('Registrar Factura y Actualizar Stock') }}</x-primary-button>
         </div>
     </form>
 
