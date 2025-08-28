@@ -7,6 +7,12 @@ use App\Models\Producto;
 use App\Models\Marca;      
 use App\Models\Categoria;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver; // O Imagick\Driver si prefieres Imagick
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\GifEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
 
 class ProductoController extends Controller
 {
@@ -48,9 +54,50 @@ class ProductoController extends Controller
             'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
 
-        // 2. Maneja la subida del archivo de imagen
+        // 2. Maneja la subida del archivo de imagen y compresión
         if ($request->hasFile('ruta_imagen')) {
-            $path = $request->file('ruta_imagen')->store('productos', 'public');
+            $imageFile = $request->file('ruta_imagen');
+            
+            // Crear una instancia de ImageManager con el driver GD
+            $manager = new ImageManager(new Driver());
+
+            // Leer la imagen subida
+            $img = $manager->read($imageFile->getRealPath());
+
+            // Comprimir la imagen al 80% de calidad
+            $extension = strtolower($imageFile->extension());
+            $encoder = null;
+
+            switch ($extension) {
+                case 'jpeg':
+                case 'jpg':
+                    $encoder = new JpegEncoder(80);
+                    break;
+                case 'png':
+                    $encoder = new PngEncoder(8); // Quality for PNG is compression level (0-9)
+                    break;
+                case 'gif':
+                    $encoder = new GifEncoder(); // GIF doesn't have quality setting like JPEG/PNG
+                    break;
+                case 'webp':
+                    $encoder = new WebpEncoder(80);
+                    break;
+                default:
+                    // Fallback for unsupported types or if no specific encoder is needed
+                    // You might want to log this or handle it differently
+                    $encoder = new JpegEncoder(quality: 80); // Default to JPEG encoder
+                    break;
+            }
+
+            $compressedImage = $img->encode($encoder);
+
+            // Generar un nombre único para la imagen y definir la ruta de almacenamiento
+            $fileName = uniqid() . '.' . $imageFile->extension();
+            $path = 'productos/' . $fileName;
+
+            // Guardar la imagen comprimida en el disco 'public'
+            Storage::disk('public')->put($path, $compressedImage);
+
             $validatedData['ruta_imagen'] = $path;
         }
 
@@ -107,13 +154,55 @@ class ProductoController extends Controller
             'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
 
-        // 2. Maneja la subida de una nueva imagen
+        // 2. Maneja la subida de una nueva imagen y compresión
         if ($request->hasFile('ruta_imagen')) {
             // Opcional: Eliminar la imagen anterior si existe
             if ($producto->ruta_imagen) {
                 Storage::disk('public')->delete($producto->ruta_imagen);
             }
-            $path = $request->file('ruta_imagen')->store('productos', 'public');
+
+            $imageFile = $request->file('ruta_imagen');
+
+            // Crear una instancia de ImageManager con el driver GD
+            $manager = new ImageManager(new Driver());
+
+            // Leer la imagen subida
+            $img = $manager->read($imageFile->getRealPath());
+
+            // Comprimir la imagen al 80% de calidad
+            $extension = strtolower($imageFile->extension());
+            $encoder = null;
+
+            switch ($extension) {
+                case 'jpeg':
+                case 'jpg':
+                    $encoder = new JpegEncoder(80);
+                    break;
+                case 'png':
+                    $encoder = new PngEncoder(8); // Quality for PNG is compression level (0-9)
+                    break;
+                case 'gif':
+                    $encoder = new GifEncoder(); // GIF doesn't have quality setting like JPEG/PNG
+                    break;
+                case 'webp':
+                    $encoder = new WebpEncoder(80);
+                    break;
+                default:
+                    // Fallback for unsupported types or if no specific encoder is needed
+                    // You might want to log this or handle it differently
+                    $encoder = new JpegEncoder(quality: 80); // Default to JPEG encoder
+                    break;
+            }
+
+            $compressedImage = $img->encode($encoder);
+
+            // Generar un nombre único para la imagen y definir la ruta de almacenamiento
+            $fileName = uniqid() . '.' . $imageFile->extension();
+            $path = 'productos/' . $fileName;
+
+            // Guardar la imagen comprimida en el disco 'public'
+            Storage::disk('public')->put($path, $compressedImage);
+
             $validatedData['ruta_imagen'] = $path;
         }
 
