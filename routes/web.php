@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('proveedores', App\Http\Controllers\ProveedorController::class)->parameters(['proveedores' => 'proveedor']);
     Route::get('/stock-movements', App\Livewire\GestionarMovimientosStock::class)->name('stock-movements.index');
 
+    Route::get('/facturas-compra/create', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.create');
+    Route::get('/facturas-compra/{factura}/edit', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.edit');
+
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class);
         Route::resource('metodos-pago', App\Http\Controllers\MetodoPagoController::class)->parameters([
@@ -43,7 +46,6 @@ Route::middleware('auth')->group(function () {
             return view('tasa_de_cambio.index');
         })->name('tasa-de-cambio.index');
         Route::get('/facturas-compra', App\Livewire\GestionarFacturasCompra::class)->name('facturas-compra.index');
-        Route::get('/facturas-compra/create', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.create');
     });
 
     Route::middleware(['permission:access pos'])->group(function () {
