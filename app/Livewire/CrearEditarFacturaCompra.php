@@ -19,17 +19,17 @@ use Livewire\Attributes\Rule;
 class CrearEditarFacturaCompra extends Component
 {
     // Invoice state
-    public $factura_id = null;
+    public $factura_id;
 
     // Form properties
     // #[Rule('required|exists:proveedores,id')]
-    public $proveedor_id = null;
+    public $proveedor_id;
 
     // #[Rule('required|date')]
     public $fecha_factura;
 
-    public $tasa_de_cambio_id = null; // New property to store the ID of the exchange rate
-    public $tasa_cambio_aplicada_valor = 0; // To display the value, derived from tasa_de_cambio_id
+    public $tasa_de_cambio_id; // Nueva propiedad para almacenar el ID de la tasa de cambio
+    public $tasa_cambio_aplicada_valor = 0; // Para mostrar el valor, derivado de tasa_de_cambio_id
 
     // Product search and list
     public $searchProducto = '';
@@ -50,36 +50,42 @@ class CrearEditarFacturaCompra extends Component
 
     public function mount(FacturaCompra $factura = null)
     {
-        $this->loadMetodosPagoDisponibles();
+        try {
+            $this->loadMetodosPagoDisponibles();
 
-        if ($factura && $factura->exists) {
-            $this->factura_id = $factura->id;
-            $this->proveedor_id = $factura->proveedor_id;
-            $this->fecha_factura = $factura->fecha_factura->format('Y-m-d');
-            $this->tasa_de_cambio_id = $factura->tasa_de_cambio_id; // Load the ID
-            $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0; // Get value from relation
+            if ($factura && $factura->exists) {
+                $this->factura_id = $factura->id;
+                $this->proveedor_id = $factura->proveedor_id;
+                $this->fecha_factura = $factura->fecha_factura->format('Y-m-d');
+                $this->tasa_de_cambio_id = $factura->tasa_de_cambio_id; // Load the ID
+                $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0; // Get value from relation
 
-            foreach ($factura->detalles as $detalle) {
-                $this->productosFactura[] = [
-                    'producto_id' => $detalle->producto_id,
-                    'nombre' => $detalle->producto->nombre,
-                    'cantidad' => $detalle->cantidad,
-                    'precio_compra_unitario' => $detalle->precio_compra_unitario,
-                    'subtotal_usd' => $detalle->subtotal_usd,
-                ];
+                foreach ($factura->detalles as $detalle) {
+                    $this->productosFactura[] = [
+                        'producto_id' => $detalle->producto_id,
+                        'nombre' => $detalle->producto->nombre,
+                        'cantidad' => $detalle->cantidad,
+                        'precio_compra_unitario' => $detalle->precio_compra_unitario,
+                        'subtotal_usd' => $detalle->subtotal_usd,
+                    ];
+                }
+
+                foreach ($factura->pagos as $pago) {
+                    $this->pagosFactura[] = [
+                        'metodo_pago_id' => $pago->metodo_pago_id,
+                        'monto_usd' => $pago->monto_usd,
+                    ];
+                }
+
+                $this->calcularTotales();
+            } else {
+                $this->fecha_factura = Carbon::now()->format('Y-m-d');
+                $this->fetchTasaDeCambio();
             }
-
-            foreach ($factura->pagos as $pago) {
-                $this->pagosFactura[] = [
-                    'metodo_pago_id' => $pago->metodo_pago_id,
-                    'monto_usd' => $pago->monto_usd,
-                ];
-            }
-
-            $this->calcularTotales();
-        } else {
-            $this->fecha_factura = Carbon::now()->format('Y-m-d');
-            $this->fetchTasaDeCambio();
+        } catch (\Exception $e) {
+            $this->dispatch('app-notification-error', message: 'Error al cargar la factura: ' . $e->getMessage());
+            // Log the error for server-side debugging
+            \Illuminate\Support\Facades\Log::error('Error in CrearEditarFacturaCompra mount: ' . $e->getMessage(), ['exception' => $e]);
         }
     }
 
@@ -175,20 +181,25 @@ class CrearEditarFacturaCompra extends Component
 
     public function fetchTasaDeCambio()
     {
-        $fecha = Carbon::parse($this->fecha_factura)->endOfDay();
-        $tasaDeCambio = TasaDeCambio::whereDate('fecha_actualizacion', '<=', $fecha)
-                            ->orderBy('fecha_actualizacion', 'desc')
-                            ->first();
+        try {
+            $fecha = Carbon::parse($this->fecha_factura)->endOfDay();
+            $tasaDeCambio = TasaDeCambio::whereDate('fecha_actualizacion', '<=', $fecha)
+                                ->orderBy('fecha_actualizacion', 'desc')
+                                ->first();
 
-        if ($tasaDeCambio) {
-            $this->tasa_de_cambio_id = $tasaDeCambio->id;
-            $this->tasa_cambio_aplicada_valor = $tasaDeCambio->tasa;
-        } else {
-            $this->tasa_de_cambio_id = null;
-            $this->tasa_cambio_aplicada_valor = 0;
-            $this->dispatch('app-notification-error', message: 'No se encontró tasa de cambio para la fecha.');
+            if ($tasaDeCambio) {
+                $this->tasa_de_cambio_id = $tasaDeCambio->id;
+                $this->tasa_cambio_aplicada_valor = $tasaDeCambio->tasa;
+            } else {
+                $this->tasa_de_cambio_id = null;
+                $this->tasa_cambio_aplicada_valor = 0;
+                $this->dispatch('app-notification-error', message: 'No se encontró tasa de cambio para la fecha seleccionada.');
+            }
+            $this->calcularTotales();
+        } catch (\Exception $e) {
+            $this->dispatch('app-notification-error', message: 'Error al obtener la tasa de cambio: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error in fetchTasaDeCambio: ' . $e->getMessage(), ['exception' => $e]);
         }
-        $this->calcularTotales();
     }
 
     public function calcularTotales()
