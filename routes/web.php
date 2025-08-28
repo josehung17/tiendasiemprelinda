@@ -23,6 +23,11 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // Mover la ruta de creación de factura de compra al inicio del grupo 'auth'
+    Route::get('/facturas-compra/create', function () {
+        return view('facturas-compra.create');
+    })->name('facturas-compra.create');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -34,7 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('proveedores', App\Http\Controllers\ProveedorController::class)->parameters(['proveedores' => 'proveedor']);
     Route::get('/stock-movements', App\Livewire\GestionarMovimientosStock::class)->name('stock-movements.index');
 
-    Route::get('/facturas-compra/create', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.create');
     Route::get('/facturas-compra/{factura}/edit', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.edit');
 
     Route::middleware(['role:admin'])->group(function () {
