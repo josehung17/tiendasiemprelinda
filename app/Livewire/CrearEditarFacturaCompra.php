@@ -13,28 +13,33 @@ use App\Models\FacturaCompraMetodoPago;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 
 class CrearEditarFacturaCompra extends Component
 {
-    // Form properties
-    #[Rule('required|exists:proveedores,id')]
-    public $proveedor_id;
+    // Invoice state
+    public $factura_id = null;
 
-    #[Rule('required|date')]
+    // Form properties
+    // #[Rule('required|exists:proveedores,id')]
+    public $proveedor_id = null;
+
+    // #[Rule('required|date')]
     public $fecha_factura;
 
-    public $tasa_cambio_aplicada; // Will be fetched based on fecha_factura
+    public $tasa_de_cambio_id = null; // New property to store the ID of the exchange rate
+    public $tasa_cambio_aplicada_valor = 0; // To display the value, derived from tasa_de_cambio_id
 
     // Product search and list
     public $searchProducto = '';
     public $productosEncontrados = [];
-    public $productosFactura = []; // Array of ['producto_id', 'nombre', 'cantidad', 'precio_compra_unitario', 'subtotal_usd']
-    public $quantities = []; // To store quantities for products found in search
+    public $productosFactura = [];
+    public $quantities = [];
 
     // Payment methods
     public $metodosPagoDisponibles = [];
-    public $pagosFactura = []; // Array of ['metodo_pago_id', 'monto_usd']
+    public $pagosFactura = [];
 
     // Totals
     public $totalFacturaUsd = 0;
@@ -43,11 +48,39 @@ class CrearEditarFacturaCompra extends Component
     // For product creation modal
     public $showCrearProductoModal = false;
 
-    public function mount()
+    public function mount(FacturaCompra $factura = null)
     {
-        $this->fecha_factura = Carbon::now()->format('Y-m-d');
         $this->loadMetodosPagoDisponibles();
-        $this->fetchTasaDeCambio(); // Fetch initial rate
+
+        if ($factura && $factura->exists) {
+            $this->factura_id = $factura->id;
+            $this->proveedor_id = $factura->proveedor_id;
+            $this->fecha_factura = $factura->fecha_factura->format('Y-m-d');
+            $this->tasa_de_cambio_id = $factura->tasa_de_cambio_id; // Load the ID
+            $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0; // Get value from relation
+
+            foreach ($factura->detalles as $detalle) {
+                $this->productosFactura[] = [
+                    'producto_id' => $detalle->producto_id,
+                    'nombre' => $detalle->producto->nombre,
+                    'cantidad' => $detalle->cantidad,
+                    'precio_compra_unitario' => $detalle->precio_compra_unitario,
+                    'subtotal_usd' => $detalle->subtotal_usd,
+                ];
+            }
+
+            foreach ($factura->pagos as $pago) {
+                $this->pagosFactura[] = [
+                    'metodo_pago_id' => $pago->metodo_pago_id,
+                    'monto_usd' => $pago->monto_usd,
+                ];
+            }
+
+            $this->calcularTotales();
+        } else {
+            $this->fecha_factura = Carbon::now()->format('Y-m-d');
+            $this->fetchTasaDeCambio();
+        }
     }
 
     public function render()
@@ -73,9 +106,8 @@ class CrearEditarFacturaCompra extends Component
     {
         $producto = Producto::find($productoId);
         if ($producto && !collect($this->productosFactura)->contains('producto_id', $productoId)) {
-            $quantity = $this->quantities[$productoId] ?? 1; // Get quantity from the quantities array, default to 1
+            $quantity = $this->quantities[$productoId] ?? 1;
 
-            // Basic validation for quantity
             if (!is_numeric($quantity) || $quantity <= 0) {
                 $this->dispatch('app-notification-error', message: 'La cantidad debe ser un número positivo.');
                 return;
@@ -85,12 +117,11 @@ class CrearEditarFacturaCompra extends Component
                 'producto_id' => $producto->id,
                 'nombre' => $producto->nombre,
                 'cantidad' => $quantity,
-                'precio_compra_unitario' => $producto->precio_compra, // Default to product's last purchase price
+                'precio_compra_unitario' => $producto->precio_compra,
                 'subtotal_usd' => $producto->precio_compra * $quantity,
             ];
             $this->searchProducto = '';
             $this->productosEncontrados = [];
-            // No need to reset quantities[$productoId] here, as it's handled by wire:model.live
             $this->calcularTotales();
         }
     }
@@ -98,16 +129,14 @@ class CrearEditarFacturaCompra extends Component
     public function removeProducto($index)
     {
         unset($this->productosFactura[$index]);
-        $this->productosFactura = array_values($this->productosFactura); // Re-index array
+        $this->productosFactura = array_values($this->productosFactura);
         $this->calcularTotales();
     }
 
     public function updatedProductosFactura($value, $key)
     {
-        // $key format: "index.property" e.g., "0.cantidad"
         $parts = explode('.', $key);
         $index = $parts[0];
-        $property = $parts[1];
 
         if (isset($this->productosFactura[$index])) {
             $cantidad = (float) $this->productosFactura[$index]['cantidad'];
@@ -125,10 +154,7 @@ class CrearEditarFacturaCompra extends Component
 
     public function addPago()
     {
-        $this->pagosFactura[] = [
-            'metodo_pago_id' => '',
-            'monto_usd' => 0,
-        ];
+        $this->pagosFactura[] = ['metodo_pago_id' => '', 'monto_usd' => 0];
     }
 
     public function removePago($index)
@@ -149,57 +175,97 @@ class CrearEditarFacturaCompra extends Component
 
     public function fetchTasaDeCambio()
     {
-        $fecha = Carbon::parse($this->fecha_factura)->endOfDay(); // Get rate for end of selected day
-
-        $tasa = TasaDeCambio::whereDate('fecha_actualizacion', '<=', $fecha)
+        $fecha = Carbon::parse($this->fecha_factura)->endOfDay();
+        $tasaDeCambio = TasaDeCambio::whereDate('fecha_actualizacion', '<=', $fecha)
                             ->orderBy('fecha_actualizacion', 'desc')
                             ->first();
 
-        if ($tasa) {
-            $this->tasa_cambio_aplicada = $tasa->tasa;
-            $this->dispatch('app-notification-success', message: 'Tasa de cambio para ' . $fecha->format('d/m/Y') . ' cargada: ' . number_format($tasa->tasa, 4));
+        if ($tasaDeCambio) {
+            $this->tasa_de_cambio_id = $tasaDeCambio->id;
+            $this->tasa_cambio_aplicada_valor = $tasaDeCambio->tasa;
         } else {
-            $this->tasa_cambio_aplicada = 0; // Or a default, or force user to select a date with a rate
-            $this->dispatch('app-notification-error', message: 'No se encontró tasa de cambio para la fecha seleccionada o anterior. Por favor, actualice la tasa manualmente si es necesario.');
+            $this->tasa_de_cambio_id = null;
+            $this->tasa_cambio_aplicada_valor = 0;
+            $this->dispatch('app-notification-error', message: 'No se encontró tasa de cambio para la fecha.');
         }
         $this->calcularTotales();
     }
 
     public function calcularTotales()
     {
+        $tasaAplicada = $this->tasa_cambio_aplicada_valor;
+        if ($tasaAplicada <= 0 && $this->tasa_de_cambio_id) {
+            // Fallback: if value is 0 but ID exists, try to get value from DB
+            $tasaObj = TasaDeCambio::find($this->tasa_de_cambio_id);
+            if ($tasaObj) {
+                $tasaAplicada = $tasaObj->tasa;
+                $this->tasa_cambio_aplicada_valor = $tasaAplicada; // Update property
+            }
+        }
+
         $this->totalFacturaUsd = collect($this->productosFactura)->sum('subtotal_usd');
-        $this->totalFacturaBs = round($this->totalFacturaUsd * $this->tasa_cambio_aplicada, 2);
+        $this->totalFacturaBs = round($this->totalFacturaUsd * $tasaAplicada, 2);
     }
 
-    public function saveFactura()
+    public function save()
     {
         $this->validate([
             'proveedor_id' => 'required|exists:proveedores,id',
             'fecha_factura' => 'required|date',
+            'tasa_de_cambio_id' => 'required|exists:tasas_de_cambio,id', // Validate the ID
             'productosFactura' => 'required|array|min:1',
-            'productosFactura.*.producto_id' => 'required|exists:productos,id',
             'productosFactura.*.cantidad' => 'required|numeric|min:1',
             'productosFactura.*.precio_compra_unitario' => 'required|numeric|min:0',
-            'pagosFactura' => 'nullable|array',
             'pagosFactura.*.metodo_pago_id' => 'required|exists:metodo_pagos,id',
             'pagosFactura.*.monto_usd' => 'required|numeric|min:0',
         ]);
 
-        if ($this->tasa_cambio_aplicada <= 0) {
-            $this->dispatch('app-notification-error', message: 'No se ha podido determinar una tasa de cambio válida para la factura.');
+        if ($this->tasa_cambio_aplicada_valor <= 0) {
+            $this->dispatch('app-notification-error', message: 'Tasa de cambio no válida para el cálculo.');
             return;
         }
 
         DB::transaction(function () {
-            $factura = FacturaCompra::create([
-                'proveedor_id' => $this->proveedor_id,
-                'fecha_factura' => $this->fecha_factura,
-                'tasa_cambio_aplicada' => $this->tasa_cambio_aplicada,
-                'total_usd' => $this->totalFacturaUsd,
-                'total_bs' => $this->totalFacturaBs,
-                'user_id' => Auth::id(),
-            ]);
+            if ($this->factura_id) {
+                // Update logic
+                $factura = FacturaCompra::find($this->factura_id);
 
+                // Revert stock from previous details
+                foreach ($factura->detalles as $detalle) {
+                    if ($detalle->producto) {
+                        $detalle->producto->stock -= $detalle->cantidad;
+                        $detalle->producto->save();
+                    }
+                }
+
+                // Delete old details and payments
+                $factura->detalles()->delete();
+                $factura->pagos()->delete();
+
+                // Use Query Builder update to bypass potential Eloquent model issues
+                DB::table('factura_compras')->where('id', $factura->id)->update([
+                    'proveedor_id' => $this->proveedor_id,
+                    'fecha_factura' => $this->fecha_factura,
+                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id, // Save the ID
+                    'total_usd' => $this->totalFacturaUsd,
+                    'total_bs' => $this->totalFacturaBs,
+                    'user_id' => Auth::id(),
+                    'updated_at' => now(),
+                ]);
+
+            } else {
+                // Create logic
+                $factura = FacturaCompra::create([
+                    'proveedor_id' => $this->proveedor_id,
+                    'fecha_factura' => $this->fecha_factura,
+                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id, // Save the ID
+                    'total_usd' => $this->totalFacturaUsd,
+                    'total_bs' => $this->totalFacturaBs,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
+            // Create new details and update stock
             foreach ($this->productosFactura as $item) {
                 FacturaCompraDetalle::create([
                     'factura_compra_id' => $factura->id,
@@ -209,18 +275,15 @@ class CrearEditarFacturaCompra extends Component
                     'subtotal_usd' => $item['subtotal_usd'],
                 ]);
 
-                // Update product stock and last purchase price
                 $producto = Producto::find($item['producto_id']);
                 if ($producto) {
                     $producto->stock += $item['cantidad'];
-                    $producto->precio_compra = $item['precio_compra_unitario']; // Update last purchase price
+                    $producto->precio_compra = $item['precio_compra_unitario'];
                     $producto->save();
-
-                    // Optionally, record stock movement
-                    // MovimientoStock::create([...]);
                 }
             }
 
+            // Create new payments
             foreach ($this->pagosFactura as $pago) {
                 FacturaCompraMetodoPago::create([
                     'factura_compra_id' => $factura->id,
@@ -228,41 +291,22 @@ class CrearEditarFacturaCompra extends Component
                     'monto_usd' => $pago['monto_usd'],
                 ]);
             }
+
+            session()->flash('message', 'Factura ' . ($this->factura_id ? 'actualizada' : 'creada') . ' exitosamente.');
+            $this->redirect(route('facturas-compra.index'));
         });
-
-        $this->dispatch('app-notification-success', message: 'Factura de compra registrada y stock actualizado exitosamente.');
-        $this->resetForm();
-        $this->dispatch('facturaCompraSaved'); // Notify list component
-    }
-
-    public function resetForm()
-    {
-        $this->proveedor_id = null;
-        $this->fecha_factura = Carbon::now()->format('Y-m-d');
-        $this->tasa_cambio_aplicada = 0;
-        $this->searchProducto = '';
-        $this->productosEncontrados = [];
-        $this->productosFactura = [];
-        $this->pagosFactura = [];
-        $this->totalFacturaUsd = 0;
-        $this->totalFacturaBs = 0;
-        $this->fetchTasaDeCambio(); // Re-fetch initial rate
     }
 
     public function openCrearProductoModal()
     {
         $this->showCrearProductoModal = true;
-        $this->dispatch('openCrearProductoModal'); // Event to open the modal
     }
 
-    #[On('productoCreated')]
+    // #[On('productoCreated')]
     public function handleProductoCreated($productoId)
     {
-        $producto = Producto::find($productoId);
-        if ($producto) {
-            $this->addProducto($productoId); // Add newly created product to the list
-            $this->dispatch('app-notification-success', message: 'Producto "' . $producto->nombre . '" creado y añadido a la factura.');
-        }
         $this->showCrearProductoModal = false;
+        $this->addProducto($productoId);
+        $this->dispatch('app-notification-success', message: 'Producto creado y añadido.');
     }
 }

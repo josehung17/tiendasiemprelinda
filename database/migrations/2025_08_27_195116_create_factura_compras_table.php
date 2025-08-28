@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('factura_compras', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->date('fecha_factura');

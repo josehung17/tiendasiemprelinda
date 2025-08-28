@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tasas_de_cambio', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('moneda')->unique(); // Ej: 'USD'
             $table->decimal('tasa', 10, 4); // Tasa de cambio, ej: 1.2345

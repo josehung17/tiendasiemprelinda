@@ -15,9 +15,7 @@ class ActualizarTasaBoton extends Component
         $today = Carbon::today();
 
         // Verificar si ya se actualizó la tasa hoy
-        $tasaExistente = TasaDeCambio::where('moneda', 'USD') // Asumimos USD como la moneda principal
-                                    ->whereDate('fecha_actualizacion', $today)
-                                    ->first();
+        $tasaExistente = TasaDeCambio::whereDate('fecha_actualizacion', $today)->first();
 
         if ($tasaExistente) {
             $this->dispatch('app-notification-error', message: 'La tasa de cambio ya fue actualizada hoy.');
@@ -25,11 +23,11 @@ class ActualizarTasaBoton extends Component
         }
 
         // Lógica para obtener la tasa de la API externa
+        $nuevaTasa = null;
         try {
             $response = Http::get('https://bcv-api.rafnixg.dev/rates/');
             if ($response->successful()) {
                 $data = $response->json();
-                // Asumiendo que la API devuelve la tasa del dólar bajo la clave 'dollar'
                 if (isset($data['dollar'])) {
                     $nuevaTasa = (float) $data['dollar'];
                 } else {
@@ -53,16 +51,14 @@ class ActualizarTasaBoton extends Component
             return;
         }
 
-        // Guardar o actualizar la tasa en la base de datos
-        TasaDeCambio::updateOrCreate(
-            ['moneda' => 'USD'], // Busca por moneda
-            [
-                'tasa' => $nuevaTasa,
-                'fecha_actualizacion' => $today,
-            ]
-        );
+        // Crear un nuevo registro para la tasa de cambio
+        TasaDeCambio::create([
+            'moneda' => 'USD',
+            'tasa' => $nuevaTasa,
+            'fecha_actualizacion' => $today,
+        ]);
 
-        $this->dispatch('app-notification-success', message: 'Tasa de cambio actualizada a: ' . $nuevaTasa);
+        $this->dispatch('app-notification-success', message: 'Nueva tasa de cambio guardada: ' . $nuevaTasa);
     }
 
     public function render()
