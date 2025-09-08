@@ -55,8 +55,22 @@
                         <p class="mt-1 text-gray-800 dark:text-gray-200">{{ $product->marca->nombre }}</p>
                     </div>
                     <div>
-                        <strong class="block font-medium text-sm text-gray-700 dark:text-gray-300">Stock:</strong>
-                        <p class="mt-1 text-gray-800 dark:text-gray-200">{{ $product->stock }}</p>
+                        <strong class="block font-medium text-sm text-gray-700 dark:text-gray-300">Stock por Ubicación:</strong>
+                        @if($stockLocations->isNotEmpty())
+                            <ul class="mt-1 space-y-1 text-gray-800 dark:text-gray-200">
+                                @foreach($stockLocations as $location)
+                                    <li>
+                                        {{ $location->ubicacion_nombre }}
+                                        @if($location->zona_nombre)
+                                            ({{ $location->zona_nombre }})
+                                        @endif
+                                        : <span class="font-semibold">{{ $location->stock }}</span> unidades
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <p class="mt-1 text-gray-500 dark:text-gray-400">No hay stock disponible en ninguna ubicación.</p>
+                        @endif
                     </div>
                     <div>
                         <strong class="block font-medium text-sm text-gray-700 dark:text-gray-300">Margen de Ganancia:</strong>
