@@ -24,7 +24,6 @@ class Producto extends Model
         'precio_descuento',
         'marca_id',
         'categoria_id',
-        'stock',
         'precio_compra',
         'margen_ganancia'
     ];
@@ -66,5 +65,15 @@ class Producto extends Model
     public function marca()
     {
         return $this->belongsTo(Marca::class);
+    }
+
+    /**
+     * The ubicaciones that belong to the producto.
+     */
+    public function ubicaciones()
+    {
+        return $this->belongsToMany(Ubicacion::class, 'producto_ubicacion')
+                    ->withPivot('stock', 'stock_minimo', 'zona_id')
+                    ->withTimestamps();
     }
 }

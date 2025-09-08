@@ -10,6 +10,8 @@ use App\Models\TasaDeCambio;
 use App\Models\FacturaCompra;
 use App\Models\FacturaCompraDetalle;
 use App\Models\FacturaCompraMetodoPago;
+use App\Models\Ubicacion; // Importar Ubicacion
+use App\Models\Zona; // Importar Zona
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -22,20 +24,22 @@ class CrearEditarFacturaCompra extends Component
     public $factura_id;
 
     // Form properties
-    // #[Rule('required|exists:proveedores,id')]
     public $proveedor_id;
-
-    // #[Rule('required|date')]
     public $fecha_factura;
-
-    public $tasa_de_cambio_id; // Nueva propiedad para almacenar el ID de la tasa de cambio
-    public $tasa_cambio_aplicada_valor = 0; // Para mostrar el valor, derivado de tasa_de_cambio_id
+    public $tasa_de_cambio_id;
+    public $tasa_cambio_aplicada_valor = 0;
 
     // Product search and list
     public $searchProducto = '';
     public $productosEncontrados = [];
     public $productosFactura = [];
     public $quantities = [];
+
+    // Ubicacion and Zona for adding products
+    public $almacenes = [];
+    public $zonasDisponibles = [];
+    public $ubicacion_id_para_agregar;
+    public $zona_id_para_agregar;
 
     // Payment methods
     public $metodosPagoDisponibles = [];
@@ -52,6 +56,11 @@ class CrearEditarFacturaCompra extends Component
     {
         try {
             $this->loadMetodosPagoDisponibles();
+            $this->almacenes = Ubicacion::where('tipo', 'almacen')->orderBy('nombre')->get();
+            if ($this->almacenes->isNotEmpty()) {
+                $this->ubicacion_id_para_agregar = $this->almacenes->first()->id;
+                $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar);
+            }
 
             if ($factura && $factura->exists) {
                 $this->factura_id = $factura->id;
@@ -61,11 +70,14 @@ class CrearEditarFacturaCompra extends Component
                 $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0; // Get value from relation
 
                 foreach ($factura->detalles as $detalle) {
+                    $productoOriginal = Producto::find($detalle->producto_id); // Fetch product to get original price
                     $this->productosFactura[] = [
                         'producto_id' => $detalle->producto_id,
                         'nombre' => $detalle->producto->nombre,
                         'cantidad' => $detalle->cantidad,
                         'precio_compra_unitario' => $detalle->precio_compra_unitario,
+                        'precio_compra_original' => $productoOriginal ? $productoOriginal->precio_compra : 0, // Add this line
+                        'actualizar_precio' => false, // Add this line
                         'subtotal_usd' => $detalle->subtotal_usd,
                     ];
                 }
@@ -97,6 +109,12 @@ class CrearEditarFacturaCompra extends Component
         ]);
     }
 
+    public function updatedUbicacionIdParaAgregar($ubicacion_id)
+    {
+        $this->zonasDisponibles = Zona::where('ubicacion_id', $ubicacion_id)->orderBy('nombre')->get();
+        $this->zona_id_para_agregar = null; // Reset zona selection
+    }
+
     public function updatedSearchProducto()
     {
         if (!empty($this->searchProducto)) {
@@ -110,6 +128,11 @@ class CrearEditarFacturaCompra extends Component
 
     public function addProducto($productoId)
     {
+        if (empty($this->ubicacion_id_para_agregar)) {
+            $this->dispatch('app-notification-error', message: 'Por favor, selecciona un almacén de destino.');
+            return;
+        }
+
         $producto = Producto::find($productoId);
         if ($producto && !collect($this->productosFactura)->contains('producto_id', $productoId)) {
             $quantity = $this->quantities[$productoId] ?? 1;
@@ -124,7 +147,11 @@ class CrearEditarFacturaCompra extends Component
                 'nombre' => $producto->nombre,
                 'cantidad' => $quantity,
                 'precio_compra_unitario' => $producto->precio_compra,
+                'precio_compra_original' => $producto->precio_compra,
+                'actualizar_precio' => false,
                 'subtotal_usd' => $producto->precio_compra * $quantity,
+                'ubicacion_id' => $this->ubicacion_id_para_agregar, // New
+                'zona_id' => $this->zona_id_para_agregar, // New
             ];
             $this->searchProducto = '';
             $this->productosEncontrados = [];
@@ -223,10 +250,11 @@ class CrearEditarFacturaCompra extends Component
         $this->validate([
             'proveedor_id' => 'required|exists:proveedores,id',
             'fecha_factura' => 'required|date',
-            'tasa_de_cambio_id' => 'required|exists:tasas_de_cambio,id', // Validate the ID
+            'tasa_de_cambio_id' => 'required|exists:tasas_de_cambio,id',
             'productosFactura' => 'required|array|min:1',
             'productosFactura.*.cantidad' => 'required|numeric|min:1',
             'productosFactura.*.precio_compra_unitario' => 'required|numeric|min:0',
+            'productosFactura.*.ubicacion_id' => 'required|exists:ubicaciones,id',
             'pagosFactura.*.metodo_pago_id' => 'required|exists:metodo_pagos,id',
             'pagosFactura.*.monto_usd' => 'required|numeric|min:0',
         ]);
@@ -238,26 +266,26 @@ class CrearEditarFacturaCompra extends Component
 
         DB::transaction(function () {
             if ($this->factura_id) {
-                // Update logic
                 $factura = FacturaCompra::find($this->factura_id);
 
                 // Revert stock from previous details
                 foreach ($factura->detalles as $detalle) {
-                    if ($detalle->producto) {
-                        $detalle->producto->stock -= $detalle->cantidad;
-                        $detalle->producto->save();
+                    if ($detalle->producto && $detalle->ubicacion_id) {
+                        DB::table('producto_ubicacion')->where([
+                            ['producto_id', '=', $detalle->producto_id],
+                            ['ubicacion_id', '=', $detalle->ubicacion_id],
+                            ['zona_id', '=', $detalle->zona_id],
+                        ])->decrement('stock', $detalle->cantidad);
                     }
                 }
 
-                // Delete old details and payments
                 $factura->detalles()->delete();
                 $factura->pagos()->delete();
 
-                // Use Query Builder update to bypass potential Eloquent model issues
                 DB::table('factura_compras')->where('id', $factura->id)->update([
                     'proveedor_id' => $this->proveedor_id,
                     'fecha_factura' => $this->fecha_factura,
-                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id, // Save the ID
+                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id,
                     'total_usd' => $this->totalFacturaUsd,
                     'total_bs' => $this->totalFacturaBs,
                     'user_id' => Auth::id(),
@@ -265,11 +293,10 @@ class CrearEditarFacturaCompra extends Component
                 ]);
 
             } else {
-                // Create logic
                 $factura = FacturaCompra::create([
                     'proveedor_id' => $this->proveedor_id,
                     'fecha_factura' => $this->fecha_factura,
-                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id, // Save the ID
+                    'tasa_de_cambio_id' => $this->tasa_de_cambio_id,
                     'total_usd' => $this->totalFacturaUsd,
                     'total_bs' => $this->totalFacturaBs,
                     'user_id' => Auth::id(),
@@ -284,17 +311,29 @@ class CrearEditarFacturaCompra extends Component
                     'cantidad' => $item['cantidad'],
                     'precio_compra_unitario' => $item['precio_compra_unitario'],
                     'subtotal_usd' => $item['subtotal_usd'],
+                    'ubicacion_id' => $item['ubicacion_id'],
+                    'zona_id' => $item['zona_id'] ?? null,
                 ]);
 
-                $producto = Producto::find($item['producto_id']);
-                if ($producto) {
-                    $producto->stock += $item['cantidad'];
-                    $producto->precio_compra = $item['precio_compra_unitario'];
-                    $producto->save();
+                DB::table('producto_ubicacion')->updateOrInsert(
+                    [
+                        'producto_id' => $item['producto_id'],
+                        'ubicacion_id' => $item['ubicacion_id'],
+                        'zona_id' => $item['zona_id'] ?? null,
+                    ],
+                    [
+                        'stock' => DB::raw('stock + ' . $item['cantidad']),
+                        'updated_at' => now(),
+                    ]
+                );
+
+                if (isset($item['actualizar_precio']) && $item['actualizar_precio']) {
+                    Producto::find($item['producto_id'])->update([
+                        'precio_compra' => $item['precio_compra_unitario']
+                    ]);
                 }
             }
 
-            // Create new payments
             foreach ($this->pagosFactura as $pago) {
                 FacturaCompraMetodoPago::create([
                     'factura_compra_id' => $factura->id,

@@ -32,6 +32,29 @@
                 <x-primary-button type="button" wire:click="openCrearProductoModal">Crear Producto</x-primary-button>
             </div>
 
+            {{-- Ubicacion y Zona --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div>
+                    <x-input-label for="ubicacion_id_para_agregar" :value="__('Almacén de Destino')" />
+                    <x-select-input id="ubicacion_id_para_agregar" wire:model.live="ubicacion_id_para_agregar" class="mt-1 block w-full">
+                        <option value="">{{ __('-- Selecciona un almacén --') }}</option>
+                        @foreach ($almacenes as $almacen)
+                            <option value="{{ $almacen->id }}">{{ $almacen->nombre }}</option>
+                        @endforeach
+                    </x-select-input>
+                    <x-input-error class="mt-2" :messages="$errors->get('ubicacion_id_para_agregar')" />
+                </div>
+                <div>
+                    <x-input-label for="zona_id_para_agregar" :value="__('Zona de Destino (Opcional)')" />
+                    <x-select-input id="zona_id_para_agregar" wire:model="zona_id_para_agregar" class="mt-1 block w-full" :disabled="!count($zonasDisponibles)">
+                        <option value="">{{ __('-- Selecciona una zona --') }}</option>
+                        @foreach ($zonasDisponibles as $zona)
+                            <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
+                        @endforeach
+                    </x-select-input>
+                </div>
+            </div>
+
             @if(!empty($productosEncontrados))
                 <ul class="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 shadow-lg mb-4 max-h-60 overflow-y-auto">
                     @foreach($productosEncontrados as $producto)
@@ -45,7 +68,7 @@
                             @endif
                             <div class="flex-grow">
                                 <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ $producto->nombre }}</p>
-                                <p class="text-gray-700 dark:text-gray-300 text-xs">Precio Compra: ${{ number_format($producto->precio_compra, 2) }} | Stock: {{ $producto->stock }}</p>
+                                <p class="text-gray-700 dark:text-gray-300 text-xs">Precio Compra: ${{ number_format($producto->precio_compra, 2) }}</p>
                             </div>
                             <input type="number" wire:model.live="quantities.{{ $producto->id }}" min="1" value="1" class="w-16 text-center border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <x-primary-button type="button" wire:click="addProducto({{ $producto->id }})">Agregar</x-primary-button>
@@ -62,6 +85,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cantidad</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio Unitario ($)</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subtotal ($)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Act. P.</th> {{-- New header --}}
                             <th class="px-6 py-3"></th>
                         </tr>
                     </thead>
@@ -78,6 +102,17 @@
                                     <x-input-error :messages="$errors->get('productosFactura.' . $index . '.precio_compra_unitario')" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">${{ number_format($item['subtotal_usd'], 2) }}</td>
+                                {{-- New column for price update --}}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                    @if(isset($item['precio_compra_original']) && $item['precio_compra_unitario'] != $item['precio_compra_original'])
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Orig: ${{ number_format($item['precio_compra_original'], 2) }}</span>
+                                            <input type="checkbox" wire:model.live="productosFactura.{{ $index }}.actualizar_precio" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out" />
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">N/A</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button type="button" wire:click="removeProducto({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">&times;</button>
                                 </td>

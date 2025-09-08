@@ -59,6 +59,11 @@
                                     Facturas de Compra
                                 </x-dropdown-link>
                                 @endcan
+                                @can('view ubicaciones')
+                                <x-dropdown-link :href="route('ubicaciones.index')">
+                                    Ubicaciones
+                                </x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -200,6 +205,11 @@
                     @can('view facturas-compra')
                     <x-responsive-nav-link :href="route('facturas-compra.index')">
                         Facturas de Compra
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view ubicaciones')
+                    <x-responsive-nav-link :href="route('ubicaciones.index')">
+                        Ubicaciones
                     </x-responsive-nav-link>
                     @endcan
                     

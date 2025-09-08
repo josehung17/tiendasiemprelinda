@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
             return view('tasa_de_cambio.index');
         })->name('tasa-de-cambio.index');
         Route::get('/facturas-compra', App\Livewire\GestionarFacturasCompra::class)->name('facturas-compra.index');
+        Route::get('/ubicaciones', App\Livewire\GestionarUbicaciones::class)->name('ubicaciones.index');
     });
 
     Route::middleware(['permission:access pos'])->group(function () {
