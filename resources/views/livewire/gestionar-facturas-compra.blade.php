@@ -1,10 +1,6 @@
 <div>
     <div class="p-6 text-gray-900 dark:text-gray-100">
-        @if (session()->has('message'))
-            <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100 dark:bg-gray-800 dark:text-green-400" role="alert">
-                <span class="font-medium">¡Éxito!</span> {{ session('message') }}
-            </div>
-        @endif
+        
 
         <div class="flex justify-between items-center mb-4">
             <input

@@ -12,6 +12,7 @@ class Zona extends Model
     protected $fillable = [
         'nombre',
         'ubicacion_id',
+        'descripcion',
     ];
 
     /**

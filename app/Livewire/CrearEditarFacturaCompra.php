@@ -53,18 +53,17 @@ class CrearEditarFacturaCompra extends Component
 
     // For product creation modal
     public $showCrearProductoModal = false;
+    public $showCrearZonaModal = false;
+    public $currentUbicacionIdForZonaModal = null;
 
     public function mount(FacturaCompra $factura = null)
     {
         try {
             $this->loadMetodosPagoDisponibles();
-            $this->almacenes = Ubicacion::where('tipo', 'almacen')->orderBy('nombre')->get();
+            $this->almacenes = Ubicacion::whereIn('tipo', ['almacen', 'transito'])->orderBy('nombre')->get();
             $this->zonas = Zona::orderBy('nombre')->get(); // Cargar todas las zonas
     
-            if ($this->almacenes->isNotEmpty()) {
-                $this->ubicacion_id_para_agregar = $this->almacenes->first()->id;
-                $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar);
-            }
+            
 
             if ($factura && $factura->exists) {
                 $this->factura_id = $factura->id;
@@ -99,11 +98,42 @@ class CrearEditarFacturaCompra extends Component
             } else {
                 $this->fecha_factura = Carbon::now()->format('Y-m-d');
                 $this->fetchTasaDeCambio();
+
+                // Set default location to 'En Transito' if available
+                $enTransitoUbicacion = Ubicacion::where('tipo', 'transito')->first();
+                if ($enTransitoUbicacion) {
+                    $this->ubicacion_id_para_agregar = $enTransitoUbicacion->id;
+                    $firstZona = $enTransitoUbicacion->zonas()->first();
+                    if ($firstZona) {
+                        $this->zona_id_para_agregar = $firstZona->id;
+                    }
+                    $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar); // ADDED THIS LINE
+                } else if ($this->almacenes->isNotEmpty()) {
+                    // Fallback to first warehouse if 'transito' not found
+                    $this->ubicacion_id_para_agregar = $this->almacenes->first()->id;
+                    $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar);
+                    \Log::info('CrearEditarFacturaCompra: Default set to first Almacen. Ubicacion ID: ' . $this->ubicacion_id_para_agregar . ', Zona ID: ' . $this->zona_id_para_agregar);
+                } else {
+                    \Log::warning('CrearEditarFacturaCompra: No default location (En Transito or Almacen) could be set.');
+                }
             }
         } catch (\Exception $e) {
             $this->dispatch('app-notification-error', message: 'Error al cargar la factura: ' . $e->getMessage());
             \Illuminate\Support\Facades\Log::error('Error in CrearEditarFacturaCompra mount: ' . $e->getMessage(), ['exception' => $e]);
         }
+    }
+
+    public function openCrearZonaModal($ubicacionId = null)
+    {
+        $this->currentUbicacionIdForZonaModal = $ubicacionId;
+        $this->showCrearZonaModal = true;
+    }
+
+    #[On('close-crear-zona-modal')]
+    public function closeCrearZonaModal()
+    {
+        $this->showCrearZonaModal = false;
+        $this->currentUbicacionIdForZonaModal = null;
     }
 
     public function render()
@@ -133,10 +163,7 @@ class CrearEditarFacturaCompra extends Component
 
     public function addProducto($productoId)
     {
-        if (empty($this->ubicacion_id_para_agregar)) {
-            $this->dispatch('app-notification-error', message: 'Por favor, selecciona un almacén de destino.');
-            return;
-        }
+        
 
         $producto = Producto::find($productoId);
         if ($producto && !collect($this->productosFactura)->contains('producto_id', $productoId)) {
@@ -361,7 +388,7 @@ class CrearEditarFacturaCompra extends Component
                 ]);
             }
 
-            session()->flash('message', 'Factura ' . ($this->factura_id ? 'actualizada' : 'creada') . ' exitosamente.');
+            session()->flash('success', 'Factura ' . ($this->factura_id ? 'actualizada' : 'creada') . ' exitosamente.');
             $this->redirect(route('facturas-compra.index'));
         });
     }
@@ -371,11 +398,24 @@ class CrearEditarFacturaCompra extends Component
         $this->showCrearProductoModal = true;
     }
 
-    // #[On('productoCreated')]
+    #[On('productoCreated')]
     public function handleProductoCreated($productoId)
     {
         $this->showCrearProductoModal = false;
         $this->addProducto($productoId);
         $this->dispatch('app-notification-success', message: 'Producto creado y añadido.');
+    }
+
+    #[On('zonaCreated')]
+    public function handleZonaCreated($zonaId, $zonaNombre, $ubicacionId)
+    {
+        // Refresh the zones collection
+        $this->zonas = Zona::orderBy('nombre')->get();
+        $this->dispatch('app-notification-success', message: 'Zona "' . $zonaNombre . '" creada y disponible.');
+
+        // Optional: Try to select the newly created zone for the relevant product item
+        // This part is complex without knowing which product item triggered the modal.
+        // For now, we just refresh the list and let the user select it.
+        // If automatic selection is critical, we'd need to pass the product index to the modal.
     }
 }

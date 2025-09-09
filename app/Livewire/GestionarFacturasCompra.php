@@ -11,6 +11,13 @@ class GestionarFacturasCompra extends Component
 {
     use WithPagination;
 
+    public function mount()
+    {
+        if (session()->has('message')) {
+            $this->dispatch('app-notification-success', message: session('message'));
+        }
+    }
+
     public $search = '';
     public $showVerFacturaModal = false;
     public $showDeleteModal = false;
@@ -64,10 +71,12 @@ class GestionarFacturasCompra extends Component
         if ($factura) {
             DB::transaction(function () use ($factura) {
                 foreach ($factura->detalles as $detalle) {
-                    if ($detalle->producto) {
-                        $producto = $detalle->producto;
-                        $producto->stock -= $detalle->cantidad;
-                        $producto->save();
+                    if ($detalle->producto && $detalle->ubicacion_id) { // Ensure ubicacion_id exists
+                        DB::table('producto_ubicacion')->where([
+                            ['producto_id', '=', $detalle->producto_id],
+                            ['ubicacion_id', '=', $detalle->ubicacion_id],
+                            ['zona_id', '=', $detalle->zona_id],
+                        ])->decrement('stock', $detalle->cantidad);
                     }
                 }
                 $factura->delete();

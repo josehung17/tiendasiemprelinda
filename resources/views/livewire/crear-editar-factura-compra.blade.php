@@ -83,12 +83,17 @@
                                     </x-select-input>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
-                                    <x-select-input wire:model="productosFactura.{{ $index }}.zona_id" class="w-full text-sm" :disabled="empty($item['ubicacion_id'])">
-                                        <option value="">Seleccionar</option>
-                                        @foreach($zonas->where('ubicacion_id', $item['ubicacion_id']) as $zona)
-                                            <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
-                                        @endforeach
-                                    </x-select-input>
+                                    <div class="flex items-center space-x-2">
+                                        <x-select-input wire:model="productosFactura.{{ $index }}.zona_id" class="w-full text-sm" :disabled="empty($item['ubicacion_id'])">
+                                            <option value="">Seleccionar</option>
+                                            @foreach($zonas->where('ubicacion_id', $item['ubicacion_id']) as $zona)
+                                                <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
+                                            @endforeach
+                                        </x-select-input>
+                                        <button type="button" wire:click="openCrearZonaModal(productosFactura[{{ $index }}].ubicacion_id)" class="p-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-xs" title="Crear nueva zona" :disabled="empty($item['ubicacion_id'])">
+                                            +
+                                        </button>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap">
                                     <x-text-input wire:model.blur="productosFactura.{{ $index }}.cantidad" type="number" min="1" class="w-20" />
@@ -175,4 +180,6 @@
             </div>
         </x-modal>
     @endif
+
+    @livewire('modals.crear-zona-modal', ['show' => $showCrearZonaModal, 'ubicacionId' => $currentUbicacionIdForZonaModal])
 </div>
