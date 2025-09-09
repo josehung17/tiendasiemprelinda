@@ -40,6 +40,8 @@ class CrearEditarFacturaCompra extends Component
     public $zonasDisponibles = [];
     public $ubicacion_id_para_agregar;
     public $zona_id_para_agregar;
+    public $zonas = [];
+
 
     // Payment methods
     public $metodosPagoDisponibles = [];
@@ -57,6 +59,8 @@ class CrearEditarFacturaCompra extends Component
         try {
             $this->loadMetodosPagoDisponibles();
             $this->almacenes = Ubicacion::where('tipo', 'almacen')->orderBy('nombre')->get();
+            $this->zonas = Zona::orderBy('nombre')->get(); // Cargar todas las zonas
+    
             if ($this->almacenes->isNotEmpty()) {
                 $this->ubicacion_id_para_agregar = $this->almacenes->first()->id;
                 $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar);
@@ -66,19 +70,21 @@ class CrearEditarFacturaCompra extends Component
                 $this->factura_id = $factura->id;
                 $this->proveedor_id = $factura->proveedor_id;
                 $this->fecha_factura = $factura->fecha_factura->format('Y-m-d');
-                $this->tasa_de_cambio_id = $factura->tasa_de_cambio_id; // Load the ID
-                $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0; // Get value from relation
+                $this->tasa_de_cambio_id = $factura->tasa_de_cambio_id;
+                $this->tasa_cambio_aplicada_valor = $factura->tasaDeCambio ? $factura->tasaDeCambio->tasa : 0;
 
                 foreach ($factura->detalles as $detalle) {
-                    $productoOriginal = Producto::find($detalle->producto_id); // Fetch product to get original price
+                    $productoOriginal = Producto::find($detalle->producto_id);
                     $this->productosFactura[] = [
                         'producto_id' => $detalle->producto_id,
                         'nombre' => $detalle->producto->nombre,
                         'cantidad' => $detalle->cantidad,
                         'precio_compra_unitario' => $detalle->precio_compra_unitario,
-                        'precio_compra_original' => $productoOriginal ? $productoOriginal->precio_compra : 0, // Add this line
-                        'actualizar_precio' => false, // Add this line
+                        'precio_compra_original' => $productoOriginal ? $productoOriginal->precio_compra : 0,
+                        'actualizar_precio' => false,
                         'subtotal_usd' => $detalle->subtotal_usd,
+                        'ubicacion_id' => $detalle->ubicacion_id, // Cargar ubicación
+                        'zona_id' => $detalle->zona_id,           // Cargar zona
                     ];
                 }
 
@@ -96,7 +102,6 @@ class CrearEditarFacturaCompra extends Component
             }
         } catch (\Exception $e) {
             $this->dispatch('app-notification-error', message: 'Error al cargar la factura: ' . $e->getMessage());
-            // Log the error for server-side debugging
             \Illuminate\Support\Facades\Log::error('Error in CrearEditarFacturaCompra mount: ' . $e->getMessage(), ['exception' => $e]);
         }
     }
@@ -170,10 +175,16 @@ class CrearEditarFacturaCompra extends Component
     {
         $parts = explode('.', $key);
         $index = $parts[0];
+        $field = $parts[1] ?? null;
 
         if (isset($this->productosFactura[$index])) {
-            $cantidad = (float) $this->productosFactura[$index]['cantidad'];
-            $precio = (float) $this->productosFactura[$index]['precio_compra_unitario'];
+            // Si cambia la ubicación, reseteamos la zona
+            if ($field === 'ubicacion_id') {
+                $this->productosFactura[$index]['zona_id'] = null;
+            }
+
+            $cantidad = (float) ($this->productosFactura[$index]['cantidad'] ?? 0);
+            $precio = (float) ($this->productosFactura[$index]['precio_compra_unitario'] ?? 0);
 
             if ($cantidad < 0) $cantidad = 0;
             if ($precio < 0) $precio = 0;
@@ -315,17 +326,25 @@ class CrearEditarFacturaCompra extends Component
                     'zona_id' => $item['zona_id'] ?? null,
                 ]);
 
-                DB::table('producto_ubicacion')->updateOrInsert(
-                    [
+                // Correct stock update logic
+                $stock = DB::table('producto_ubicacion')->where([
+                    ['producto_id', '=', $item['producto_id']],
+                    ['ubicacion_id', '=', $item['ubicacion_id']],
+                    ['zona_id', '=', $item['zona_id'] ?? null],
+                ])->first();
+
+                if ($stock) {
+                    DB::table('producto_ubicacion')->where('id', $stock->id)->increment('stock', $item['cantidad']);
+                } else {
+                    DB::table('producto_ubicacion')->insert([
                         'producto_id' => $item['producto_id'],
                         'ubicacion_id' => $item['ubicacion_id'],
                         'zona_id' => $item['zona_id'] ?? null,
-                    ],
-                    [
-                        'stock' => DB::raw('stock + ' . $item['cantidad']),
+                        'stock' => $item['cantidad'],
+                        'created_at' => now(),
                         'updated_at' => now(),
-                    ]
-                );
+                    ]);
+                }
 
                 if (isset($item['actualizar_precio']) && $item['actualizar_precio']) {
                     Producto::find($item['producto_id'])->update([

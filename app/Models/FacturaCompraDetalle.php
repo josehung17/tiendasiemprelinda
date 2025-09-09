@@ -15,6 +15,8 @@ class FacturaCompraDetalle extends Model
         'cantidad',
         'precio_compra_unitario',
         'subtotal_usd',
+        'ubicacion_id',
+        'zona_id',
     ];
 
     protected $casts = [

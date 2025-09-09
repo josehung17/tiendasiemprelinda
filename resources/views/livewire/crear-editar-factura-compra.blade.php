@@ -32,28 +32,7 @@
                 <x-primary-button type="button" wire:click="openCrearProductoModal">Crear Producto</x-primary-button>
             </div>
 
-            {{-- Ubicacion y Zona --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                <div>
-                    <x-input-label for="ubicacion_id_para_agregar" :value="__('Almacén de Destino')" />
-                    <x-select-input id="ubicacion_id_para_agregar" wire:model.live="ubicacion_id_para_agregar" class="mt-1 block w-full">
-                        <option value="">{{ __('-- Selecciona un almacén --') }}</option>
-                        @foreach ($almacenes as $almacen)
-                            <option value="{{ $almacen->id }}">{{ $almacen->nombre }}</option>
-                        @endforeach
-                    </x-select-input>
-                    <x-input-error class="mt-2" :messages="$errors->get('ubicacion_id_para_agregar')" />
-                </div>
-                <div>
-                    <x-input-label for="zona_id_para_agregar" :value="__('Zona de Destino (Opcional)')" />
-                    <x-select-input id="zona_id_para_agregar" wire:model="zona_id_para_agregar" class="mt-1 block w-full" :disabled="!count($zonasDisponibles)">
-                        <option value="">{{ __('-- Selecciona una zona --') }}</option>
-                        @foreach ($zonasDisponibles as $zona)
-                            <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
-                        @endforeach
-                    </x-select-input>
-                </div>
-            </div>
+            {{-- Ubicacion y Zona para agregar (eliminado) --}}
 
             @if(!empty($productosEncontrados))
                 <ul class="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 shadow-lg mb-4 max-h-60 overflow-y-auto">
@@ -81,29 +60,46 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Producto</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cantidad</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio Unitario ($)</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subtotal ($)</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Act. P.</th> {{-- New header --}}
-                            <th class="px-6 py-3"></th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Producto</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ubicación</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Zona</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cantidad</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio Unitario ($)</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subtotal ($)</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Act. P.</th>
+                            <th class="px-2 py-3"></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($productosFactura as $index => $item)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{{ $item['nombre'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                            <tr wire:key="producto-{{ $index }}">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{{ $item['nombre'] }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <x-select-input wire:model.live="productosFactura.{{ $index }}.ubicacion_id" class="w-full text-sm">
+                                        <option value="">Seleccionar</option>
+                                        @foreach($almacenes as $almacen)
+                                            <option value="{{ $almacen->id }}">{{ $almacen->nombre }}</option>
+                                        @endforeach
+                                    </x-select-input>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <x-select-input wire:model="productosFactura.{{ $index }}.zona_id" class="w-full text-sm" :disabled="empty($item['ubicacion_id'])">
+                                        <option value="">Seleccionar</option>
+                                        @foreach($zonas->where('ubicacion_id', $item['ubicacion_id']) as $zona)
+                                            <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
+                                        @endforeach
+                                    </x-select-input>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <x-text-input wire:model.blur="productosFactura.{{ $index }}.cantidad" type="number" min="1" class="w-20" />
                                     <x-input-error :messages="$errors->get('productosFactura.' . $index . '.cantidad')" />
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap">
                                     <x-text-input wire:model.blur="productosFactura.{{ $index }}.precio_compra_unitario" type="number" step="0.01" min="0" class="w-24" />
                                     <x-input-error :messages="$errors->get('productosFactura.' . $index . '.precio_compra_unitario')" />
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">${{ number_format($item['subtotal_usd'], 2) }}</td>
-                                {{-- New column for price update --}}
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">${{ number_format($item['subtotal_usd'], 2) }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                                     @if(isset($item['precio_compra_original']) && $item['precio_compra_unitario'] != $item['precio_compra_original'])
                                         <div class="flex items-center space-x-2">
                                             <span class="text-xs text-gray-500 dark:text-gray-400">Orig: ${{ number_format($item['precio_compra_original'], 2) }}</span>
@@ -113,13 +109,13 @@
                                         <span class="text-xs text-gray-500 dark:text-gray-400">N/A</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <td class="px-2 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button type="button" wire:click="removeProducto({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">&times;</button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
+                                <td colspan="8" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500 dark:text-gray-400">
                                     No hay productos en la factura.
                                 </td>
                             </tr>
@@ -127,7 +123,7 @@
                     </tbody>
                 </table>
             </div>
-            <x-input-error :messages="$errors->get('productosFactura')" />
+            <x-input-error class="mt-2" :messages="$errors->get('productosFactura')" />
         </div>
 
         {{-- Métodos de Pago --}}
