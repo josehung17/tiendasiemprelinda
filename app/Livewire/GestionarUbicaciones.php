@@ -81,9 +81,7 @@ class GestionarUbicaciones extends Component
 
         $this->closeModals();
 
-        $this->dispatch('app-notification-success', [
-            'message' => 'Ubicación guardada correctamente.'
-        ]);
+        $this->dispatch('app-notification-success', message: 'Ubicación guardada correctamente.');
     }
 
     private function resetUbicacionInputFields()
@@ -129,9 +127,7 @@ class GestionarUbicaciones extends Component
 
         $this->closeModals();
 
-        $this->dispatch('app-notification-success', [
-            'message' => 'Zona guardada correctamente.'
-        ]);
+        $this->dispatch('app-notification-success', message: 'Zona guardada correctamente.');
     }
 
     private function resetZonaInputFields()
@@ -161,9 +157,7 @@ class GestionarUbicaciones extends Component
 
         $this->closeModals();
 
-        $this->dispatch('app-notification-success', [
-            'message' => $message ?? 'Elemento eliminado.'
-        ]);
+        $this->dispatch('app-notification-success', message: $message ?? 'Elemento eliminado.');
     }
 
     public function closeModals()
