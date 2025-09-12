@@ -286,19 +286,6 @@ class GestionarMovimientosStock extends Component
         ]);
     }
 
-    #[On('purchasePriceUpdateConfirmed')]
-    public function updateProductPurchasePrice($productId, $newPurchasePrice)
-    {
-        $producto = Producto::find($productId);
-        if ($producto) {
-            $producto->precio_compra = $newPurchasePrice;
-            $producto->save();
-        }
-
-        // Now proceed with the stock movement
-        $this->processStockMovement($producto);
-    }
-
     private function processStockMovement(Producto $producto)
     {
         $cantidadCambio = 0;

@@ -46,8 +46,11 @@
                                 @endcan
                                 @can('manage stock')
                                 <x-dropdown-link :href="route('stock-movements.index')">
-                                    Movimientos de Stock
-                                </x-dropdown-link>
+                                {{ __('Movimientos de Stock') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('stock-minimo.index')">
+                                {{ __('Gestionar Stock Mínimo') }}
+                            </x-dropdown-link>
                                 @endcan
                             @can('view proveedores')
                                 <x-dropdown-link :href="route('proveedores.index')">

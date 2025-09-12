@@ -7,6 +7,8 @@ use App\Http\Controllers\MarcaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClienteController;
+use App\Livewire\GestionarStockMinimo;
+
 use App\Models\Producto;
 
 Route::get('/', function () {
@@ -38,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('clientes', ClienteController::class);
     Route::resource('proveedores', App\Http\Controllers\ProveedorController::class)->parameters(['proveedores' => 'proveedor']);
     Route::get('/stock-movements', App\Livewire\GestionarMovimientosStock::class)->name('stock-movements.index');
+    Route::get('/inventario/stock-minimo', GestionarStockMinimo::class)->name('stock-minimo.index');
 
     Route::get('/facturas-compra/{factura}/edit', App\Livewire\CrearEditarFacturaCompra::class)->name('facturas-compra.edit');
 

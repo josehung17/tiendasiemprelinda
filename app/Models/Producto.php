@@ -72,8 +72,11 @@ class Producto extends Model
      */
     public function ubicaciones()
     {
-        return $this->belongsToMany(Ubicacion::class, 'producto_ubicacion')
-                    ->withPivot('stock', 'stock_minimo', 'zona_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(Ubicacion::class, 'producto_ubicacion')->withPivot('stock', 'stock_minimo', 'zona_id');
+    }
+
+    public function zonas()
+    {
+        return $this->belongsToMany(Zona::class, 'producto_ubicacion')->withPivot('stock', 'stock_minimo', 'ubicacion_id');
     }
 }
