@@ -19,6 +19,11 @@ class MovimientoStock extends Model
         'proveedor_id',
         'referencia_venta',
         'motivo_ajuste',
+        'ubicacion_origen_id',
+        'zona_origen_id',
+        'ubicacion_destino_id',
+        'zona_destino_id',
+        'user_id',
     ];
 
     /**
@@ -35,5 +40,45 @@ class MovimientoStock extends Model
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    /**
+     * Get the origin location for the stock movement.
+     */
+    public function ubicacionOrigen()
+    {
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_origen_id');
+    }
+
+    /**
+     * Get the origin zone for the stock movement.
+     */
+    public function zonaOrigen()
+    {
+        return $this->belongsTo(Zona::class, 'zona_origen_id');
+    }
+
+    /**
+     * Get the destination location for the stock movement.
+     */
+    public function ubicacionDestino()
+    {
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_destino_id');
+    }
+
+    /**
+     * Get the destination zone for the stock movement.
+     */
+    public function zonaDestino()
+    {
+        return $this->belongsTo(Zona::class, 'zona_destino_id');
+    }
+
+    /**
+     * Get the user that performed the stock movement.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
