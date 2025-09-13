@@ -187,9 +187,14 @@ class GestionarMovimientosStock extends Component
             $rules = array_merge($rules, [
                 'ubicacionOrigenId' => 'required|integer|exists:ubicaciones,id',
                 'zonaOrigenId' => 'required|integer|exists:zonas,id',
-                'ubicacionDestinoId' => 'required|integer|exists:ubicaciones,id|different:ubicacionOrigenId',
+                'ubicacionDestinoId' => 'required|integer|exists:ubicaciones,id',
                 'zonaDestinoId' => 'required|integer|exists:zonas,id',
             ]);
+
+            if ($this->ubicacionOrigenId === $this->ubicacionDestinoId && $this->zonaOrigenId === $this->zonaDestinoId) {
+                $this->dispatch('toast', ['type' => 'error', 'message' => 'No se puede transferir a la misma ubicación y zona de origen.']);
+                return;
+            }
         } else { // Para ajuste_entrada y ajuste_salida
             $rules = array_merge($rules, [
                 'ubicacionAfectadaId' => 'required|integer|exists:ubicaciones,id',
