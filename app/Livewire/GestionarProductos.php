@@ -13,9 +13,8 @@ class GestionarProductos extends Component
     public $search = '';
     public $selectedProductId;
 
-    protected $listeners = ['productModalClosed' => 'handleProductModalClosed'];
-
-    public function handleProductModalClosed()
+    #[On('forceCloseProductModal')]
+    public function closeProductModal()
     {
         $this->selectedProductId = null;
     }

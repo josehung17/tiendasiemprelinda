@@ -1,5 +1,5 @@
 <div>
-    <x-modal name="product-view-modal" wire:model="show" maxWidth="lg">
+    <x-modal name="product-view-modal" wire:model="show" maxWidth="lg" @click.away="$wire.closeModal()">
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Detalles del Producto

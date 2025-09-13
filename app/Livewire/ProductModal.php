@@ -48,10 +48,17 @@ class ProductModal extends Component
         $this->show = true;
     }
 
+    public function updatedShow($value)
+    {
+        if ($value === false) {
+            $this->dispatch('forceCloseProductModal');
+        }
+    }
+
     public function closeModal()
     {
         $this->show = false;
-        $this->dispatch('productModalClosed');
+        $this->dispatch('forceCloseProductModal');
     }
 
     public function render()

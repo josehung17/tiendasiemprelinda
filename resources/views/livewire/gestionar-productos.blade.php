@@ -71,6 +71,6 @@
     </div>
 
     @if ($selectedProductId)
-        @livewire('product-modal', ['productId' => $selectedProductId], key($selectedProductId))
+        @livewire('product-modal', ['productId' => $selectedProductId], key(uniqid()))
     @endif
 </div>
