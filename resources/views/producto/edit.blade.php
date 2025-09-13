@@ -72,11 +72,7 @@
                             <x-input-error class="mt-2" :messages="$errors->get('descripcion')" />
                         </div>
 
-                        <div>
-                            <x-input-label for="stock" :value="__('Stock Actual')" />
-                            <x-text-input id="stock" name="stock" type="number" class="mt-1 block w-full" value="{{ old('stock', $producto->stock) }}" readonly />
-                            <x-input-error class="mt-2" :messages="$errors->get('stock')" />
-                        </div>
+                        
 
                         <div>
                             <x-input-label for="precio_compra" :value="__('Precio de Compra')" />

@@ -49,7 +49,6 @@ class ProductoController extends Controller
             'ruta_imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'marca_id' => 'required|exists:marcas,id',
             'categoria_id' => 'required|exists:categorias,id',
-            'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
@@ -149,7 +148,6 @@ class ProductoController extends Controller
             'ruta_imagen' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'marca_id' => 'required|exists:marcas,id',
             'categoria_id' => 'required|exists:categorias,id',
-            'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'margen_ganancia' => 'required|numeric|min:0|max:100',
         ]);
