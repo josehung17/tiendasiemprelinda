@@ -36,7 +36,8 @@
                 <div>
                     <x-input-label for="tipoMovimiento" :value="__('Tipo de Movimiento')" />
                     <x-select-input id="tipoMovimiento" wire:model.live="tipoMovimiento" class="mt-1 block w-full">
-                        <option value="ajuste-manual">Ajuste Manual</option>
+                        <option value="ajuste_entrada">Ajuste de Entrada</option>
+                        <option value="ajuste_salida">Ajuste de Salida</option>
                         <option value="transferencia">Transferencia</option>
                     </x-select-input>
                     <x-input-error class="mt-2" :messages="$errors->get('tipoMovimiento')" />
@@ -58,13 +59,19 @@
                     @if ($ubicacionAfectadaId)
                         <div>
                             <x-input-label for="zonaAfectadaId" :value="__('Zona')" />
-                            <x-select-input id="zonaAfectadaId" wire:model="zonaAfectadaId" class="mt-1 block w-full">
+                            <x-select-input id="zonaAfectadaId" wire:model.live="zonaAfectadaId" class="mt-1 block w-full">
                                 <option value="">{{ __('Selecciona una zona') }}</option>
                                 @foreach ($zonasAfectadas as $zona)
                                     <option value="{{ $zona->id }}">{{ $zona->nombre }}</option>
                                 @endforeach
                             </x-select-input>
                             <x-input-error class="mt-2" :messages="$errors->get('zonaAfectadaId')" />
+                            @if ($zonaAfectadaId && $selectedProductId)
+                                <p wire:key="stock-afectada-{{ $selectedProductId }}-{{ $ubicacionAfectadaId }}-{{ $zonaAfectadaId }}" class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                                    {{ __('Stock existente en esta ubicación/zona:') }}
+                                    <span class="font-semibold">{{ $stockExistenteAfectada }}</span>
+                                </p>
+                            @endif
                         </div>
                     @endif
                 @endif
@@ -144,7 +151,7 @@
 
                 
 
-                @if ($tipoMovimiento === 'ajuste-manual')
+                @if (in_array($tipoMovimiento, ['ajuste_entrada', 'ajuste_salida']))
                     <div>
                         <x-input-label for="motivoAjuste" :value="__('Motivo del Ajuste')" />
                         <x-text-area id="motivoAjuste" wire:model="motivoAjuste" rows="3" class="mt-1 block w-full" />

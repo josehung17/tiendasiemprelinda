@@ -25,7 +25,7 @@ class GestionarMovimientosStock extends Component
     public $selectedProductName = ''; // To display the selected product's name
 
     public $cantidad;
-    public $tipoMovimiento = 'entrada-reposicion'; // Default type
+    public $tipoMovimiento = 'ajuste_entrada'; // Default type
     public $precioCompraUnitario;
     public $selectedProveedorId;
     public $referenciaVenta;
@@ -48,6 +48,7 @@ class GestionarMovimientosStock extends Component
     public $showSearchResults = false;
     public $stockExistenteOrigen = 0;
     public $stockExistenteDestino = 0;
+    public $stockExistenteAfectada = 0;
 
     public function mount()
     {
@@ -108,6 +109,13 @@ class GestionarMovimientosStock extends Component
     {
         $this->zonasAfectadas = Zona::where('ubicacion_id', $value)->get();
         $this->zonaAfectadaId = null; // Reset zona seleccionada
+        $this->stockExistenteAfectada = 0; // Reset stock al cambiar ubicación
+        $this->actualizarStockExistenteAfectada(); // Llamar al nuevo método
+    }
+
+    public function updatedZonaAfectadaId($value)
+    {
+        $this->actualizarStockExistenteAfectada();
     }
 
     private function actualizarStockExistenteOrigen()
@@ -135,6 +143,20 @@ class GestionarMovimientosStock extends Component
             $this->stockExistenteDestino = $pivot ? $pivot->pivot->stock : 0;
         } else {
             $this->stockExistenteDestino = 0;
+        }
+    }
+
+    private function actualizarStockExistenteAfectada()
+    {
+        if ($this->selectedProductId && $this->ubicacionAfectadaId && $this->zonaAfectadaId) {
+            $producto = Producto::find($this->selectedProductId);
+            $pivot = $producto->ubicaciones()
+                              ->where('ubicacion_id', $this->ubicacionAfectadaId)
+                              ->where('zona_id', $this->zonaAfectadaId)
+                              ->first();
+            $this->stockExistenteAfectada = $pivot ? $pivot->pivot->stock : 0;
+        } else {
+            $this->stockExistenteAfectada = 0;
         }
     }
 
@@ -199,18 +221,25 @@ class GestionarMovimientosStock extends Component
             $rules = array_merge($rules, [
                 'ubicacionAfectadaId' => 'required|integer|exists:ubicaciones,id',
                 'zonaAfectadaId' => 'required|integer|exists:zonas,id',
-                'motivoAjuste' => 'required|string|min:5',
+                'motivoAjuste' => 'required|string|min:4',
             ]);
-            
-            if ($this->tipoMovimiento === 'ajuste_entrada') {
-                $rules['precioCompraUnitario'] = 'required|numeric|min:0';
-                $rules['selectedProveedorId'] = 'nullable|integer|exists:proveedores,id';
-            }
         }
     
         $this->validate($rules);
     
         $producto = Producto::find($this->selectedProductId);
+
+        // Validar stock suficiente solo para ajuste de salida, después de las validaciones básicas
+        if ($this->tipoMovimiento === 'ajuste_salida') {
+            $pivot = $producto->ubicaciones()
+                              ->where('ubicacion_id', $this->ubicacionAfectadaId)
+                              ->where('zona_id', $this->zonaAfectadaId)
+                              ->first();
+            if (!$pivot || $pivot->pivot->stock < $this->cantidad) {
+                $this->dispatch('toast', ['type' => 'error', 'message' => 'Stock insuficiente en la ubicación/zona afectada para realizar el ajuste de salida.']);
+                return;
+            }
+        }
     
         if ($this->tipoMovimiento === 'transferencia') {
             $pivot = $producto->ubicaciones()->where('ubicacion_id', $this->ubicacionOrigenId)
@@ -288,6 +317,7 @@ class GestionarMovimientosStock extends Component
             'zonasOrigen',
             'zonasDestino',
             'zonasAfectadas',
+            'tipoMovimiento',
         ]);
     }
 
@@ -304,12 +334,6 @@ class GestionarMovimientosStock extends Component
                           ->where('ubicacion_id', $this->ubicacionAfectadaId)
                           ->where('zona_id', $this->zonaAfectadaId)
                           ->first();
-    
-        // Para ajuste de salida, el pivot debe existir y tener suficiente stock
-        if ($this->tipoMovimiento === 'ajuste_salida' && (!$pivot || $pivot->pivot->stock < $this->cantidad)) {
-            $this->dispatch('toast', ['type' => 'error', 'message' => 'Stock insuficiente en la ubicación/zona seleccionada.']);
-            return;
-        }
     
         if ($pivot) {
             // Si el pivot existe, se actualiza
@@ -328,7 +352,7 @@ class GestionarMovimientosStock extends Component
         }
     
         // Crear registro de movimiento
-        MovimientoStock::create([
+        $movimientoData = [
             'producto_id' => $this->selectedProductId,
             'tipo' => $this->tipoMovimiento,
             'cantidad' => $this->cantidad, // Siempre guardar cantidad positiva
@@ -338,9 +362,19 @@ class GestionarMovimientosStock extends Component
             'ubicacion_destino_id' => $this->ubicacionAfectadaId,
             'zona_destino_id' => $this->zonaAfectadaId,
             'user_id' => auth()->id(),
-            'precio_compra_unitario' => $this->precioCompraUnitario,
-            'proveedor_id' => $this->selectedProveedorId,
-        ]);
+        ];
+
+        // Si es ajuste de entrada, no se guardan precio de compra ni proveedor
+        if ($this->tipoMovimiento === 'ajuste_entrada') {
+            $movimientoData['precio_compra_unitario'] = null;
+            $movimientoData['proveedor_id'] = null;
+        } else if ($this->tipoMovimiento === 'ajuste_salida') {
+            // Para ajuste de salida, tampoco se guardan precio de compra ni proveedor
+            $movimientoData['precio_compra_unitario'] = null;
+            $movimientoData['proveedor_id'] = null;
+        }
+
+        MovimientoStock::create($movimientoData);
     
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Ajuste de stock realizado exitosamente.']);
     }
