@@ -99,15 +99,24 @@ class CrearEditarFacturaCompra extends Component
                 $this->fecha_factura = Carbon::now()->format('Y-m-d');
                 $this->fetchTasaDeCambio();
 
-                // Set default location to 'En Transito' if available
+                // Set default location to 'En Transito' and zone to 'General' if available
                 $enTransitoUbicacion = Ubicacion::where('tipo', 'transito')->first();
                 if ($enTransitoUbicacion) {
                     $this->ubicacion_id_para_agregar = $enTransitoUbicacion->id;
-                    $firstZona = $enTransitoUbicacion->zonas()->first();
-                    if ($firstZona) {
-                        $this->zona_id_para_agregar = $firstZona->id;
+                    // First, load the zones available for the 'En Transito' location
+                    $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar);
+
+                    // Now, specifically find and set the 'General' zone as the default
+                    $zonaGeneral = Zona::where('ubicacion_id', $enTransitoUbicacion->id)->where('nombre', 'General')->first();
+                    if ($zonaGeneral) {
+                        $this->zona_id_para_agregar = $zonaGeneral->id;
+                    } else {
+                        // Fallback to the first available zone if 'General' is not found
+                        $firstZona = $this->zonasDisponibles->first();
+                        if ($firstZona) {
+                            $this->zona_id_para_agregar = $firstZona->id;
+                        }
                     }
-                    $this->updatedUbicacionIdParaAgregar($this->ubicacion_id_para_agregar); // ADDED THIS LINE
                 } else if ($this->almacenes->isNotEmpty()) {
                     // Fallback to first warehouse if 'transito' not found
                     $this->ubicacion_id_para_agregar = $this->almacenes->first()->id;
