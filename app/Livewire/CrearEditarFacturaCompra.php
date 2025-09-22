@@ -15,6 +15,7 @@ use App\Models\Zona; // Importar Zona
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\MovimientoCuenta;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Rule;
 
@@ -328,6 +329,7 @@ class CrearEditarFacturaCompra extends Component
 
                 $factura->detalles()->delete();
                 $factura->pagos()->delete();
+                MovimientoCuenta::where('origen_type', FacturaCompra::class)->where('origen_id', $factura->id)->delete();
 
                 DB::table('factura_compras')->where('id', $factura->id)->update([
                     'proveedor_id' => $this->proveedor_id,
@@ -395,6 +397,20 @@ class CrearEditarFacturaCompra extends Component
                     'metodo_pago_id' => $pago['metodo_pago_id'],
                     'monto_usd' => $pago['monto_usd'],
                 ]);
+
+                $metodoPago = MetodoPago::find($pago['metodo_pago_id']);
+                if ($metodoPago && $metodoPago->cuenta_id) {
+                    MovimientoCuenta::create([
+                        'cuenta_id' => $metodoPago->cuenta_id,
+                        'tipo' => 'salida',
+                        'monto' => $pago['monto_usd'],
+                        'descripcion' => 'Pago Factura de Compra #' . $factura->id,
+                        'responsable_id' => Auth::id(),
+                        'fecha' => $factura->fecha_factura,
+                        'origen_id' => $factura->id,
+                        'origen_type' => FacturaCompra::class,
+                    ]);
+                }
             }
 
             session()->flash('success', 'Factura ' . ($this->factura_id ? 'actualizada' : 'creada') . ' exitosamente.');

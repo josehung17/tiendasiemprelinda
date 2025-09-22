@@ -57,6 +57,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit facturas-compra',
             'delete facturas-compra',
             'view ubicaciones',
+            'view estado de cuenta',
         ];
 
         foreach ($permissions as $permission) {
@@ -103,6 +104,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit facturas-compra',
                 'delete facturas-compra',
                 'view ubicaciones',
+                'view estado de cuenta',
             ],
             'editor' => [
                 'edit products',
