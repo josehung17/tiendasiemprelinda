@@ -147,7 +147,7 @@
                                 </optgroup>
                             @endforeach
                         </x-select-input>
-                        <x-text-input wire:model.live="pagosFactura.{{ $index }}.monto_usd" type="number" step="0.01" min="0" placeholder="Monto USD" class="w-32" />
+                        <x-text-input wire:model.live="pagosFactura.{{ $index }}.monto_usd" type="number" step="0.01" min="0" placeholder="{{ $this->getMontoPlaceholder($pago['metodo_pago_id']) }}" class="w-32" />
                         <button type="button" wire:click="removePago({{ $index }})" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">&times;</button>
                     </div>
                     <x-input-error :messages="$errors->get('pagosFactura.' . $index . '.metodo_pago_id')" />

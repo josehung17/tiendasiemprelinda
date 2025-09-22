@@ -111,12 +111,6 @@ class CrearEditarFacturaCompra extends Component
                     $zonaGeneral = Zona::where('ubicacion_id', $enTransitoUbicacion->id)->where('nombre', 'General')->first();
                     if ($zonaGeneral) {
                         $this->zona_id_para_agregar = $zonaGeneral->id;
-                    } else {
-                        // Fallback to the first available zone if 'General' is not found
-                        $firstZona = $this->zonasDisponibles->first();
-                        if ($firstZona) {
-                            $this->zona_id_para_agregar = $firstZona->id;
-                        }
                     }
                 } else if ($this->almacenes->isNotEmpty()) {
                     // Fallback to first warehouse if 'transito' not found
@@ -246,7 +240,7 @@ class CrearEditarFacturaCompra extends Component
 
     public function loadMetodosPagoDisponibles()
     {
-        $this->metodosPagoDisponibles = MetodoPago::orderBy('nombre')->get();
+        $this->metodosPagoDisponibles = MetodoPago::with('cuenta.moneda')->orderBy('nombre')->get();
     }
 
     public function updatedFechaFactura()
@@ -273,7 +267,7 @@ class CrearEditarFacturaCompra extends Component
             $this->calcularTotales();
         } catch (\Exception $e) {
             $this->dispatch('app-notification-error', message: 'Error al obtener la tasa de cambio: ' . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error('Error in fetchTasaDeCambio: ' . $e->getMessage(), ['exception' => $e]);
+            \Illuminate\Support\Facades\Log::error('Error in CrearEditarFacturaCompra mount: ' . $e->getMessage(), ['exception' => $e]);
         }
     }
 
@@ -442,5 +436,17 @@ class CrearEditarFacturaCompra extends Component
         // This part is complex without knowing which product item triggered the modal.
         // For now, we just refresh the list and let the user select it.
         // If automatic selection is critical, we'd need to pass the product index to the modal.
+    }
+
+    public function getMontoPlaceholder($metodoPagoId)
+    {
+        if (!$metodoPagoId) {
+            return 'Monto USD'; // Default
+        }
+        $metodoPago = $this->metodosPagoDisponibles->firstWhere('id', $metodoPagoId);
+        if ($metodoPago && $metodoPago->cuenta && $metodoPago->cuenta->moneda) {
+            return 'Monto ' . $metodoPago->cuenta->moneda->codigo;
+        }
+        return 'Monto USD'; // Fallback
     }
 }
