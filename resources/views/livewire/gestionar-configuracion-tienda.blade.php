@@ -38,11 +38,16 @@
                                         <td class="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6">{{ $producto->nombre }}</td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             <div class="space-y-2">
-                                                @foreach($producto->zonasStock as $zona)
+                                                @foreach($allZonesForSelectedUbicacion as $zona)
+                                                    @php
+                                                        $pivot = $producto->zonasStock->firstWhere('id', $zona->id)->pivot ?? null;
+                                                        $stock = $pivot ? $pivot->stock : 0;
+                                                        $isPredeterminada = $pivot ? $pivot->es_zona_predeterminada_pos : false;
+                                                    @endphp
                                                     <div class="flex items-center justify-between">
-                                                        <span>- {{ $zona->nombre }} (Stock: {{ $zona->pivot->stock }})</span>
+                                                        <span>- {{ $zona->nombre }} (Stock: {{ $stock }})</span>
                                                         <div>
-                                                            @if($zona->pivot->es_zona_predeterminada_pos)
+                                                            @if($isPredeterminada)
                                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
                                                                     Predeterminada
                                                                 </span>

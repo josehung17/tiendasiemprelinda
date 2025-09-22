@@ -14,6 +14,7 @@ class GestionarConfiguracionTienda extends Component
     public $selectedUbicacionId;
     public $productos = [];
     public $ubicacionActivaNombre;
+    public $allZonesForSelectedUbicacion = [];
 
     public function mount()
     {
@@ -60,12 +61,13 @@ class GestionarConfiguracionTienda extends Component
         }
 
         $this->ubicacionActivaNombre = $ubicacion->nombre;
+        $this->allZonesForSelectedUbicacion = $ubicacion->zonas; // Load all zones for the selected location
 
         $this->productos = Producto::whereHas('ubicaciones', function ($query) {
             $query->where('ubicacion_id', $this->selectedUbicacionId);
         })
         ->with(['zonasStock' => function ($query) {
-            $query->where('ubicacion_id', $this->selectedUbicacionId);
+            $query->where('producto_ubicacion.ubicacion_id', $this->selectedUbicacionId);
         }])
         ->orderBy('nombre')
         ->get();
@@ -78,16 +80,17 @@ class GestionarConfiguracionTienda extends Component
             
             try {
                 DB::transaction(function () use ($productoId, $zonaId) {
-                    // 1. Quitar cualquier otra zona predeterminada para este producto en CUALQUIER ubicación
+                    // 1. Quitar cualquier otra zona predeterminada para este producto en la ubicación actual
                     DB::table('producto_ubicacion')
                         ->where('producto_id', $productoId)
+                        ->where('ubicacion_id', $this->selectedUbicacionId) // Corrected scope
                         ->update(['es_zona_predeterminada_pos' => false]);
 
                     // 2. Establecer la nueva zona predeterminada
                     DB::table('producto_ubicacion')
                         ->where('producto_id', $productoId)
                         ->where('zona_id', $zonaId)
-                        ->where('ubicacion_id', $this->selectedUubicacionId)
+                        ->where('ubicacion_id', $this->selectedUbicacionId) // Corrected typo
                         ->update(['es_zona_predeterminada_pos' => true]);
                 });
 
