@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/ubicaciones', App\Livewire\GestionarUbicaciones::class)->name('ubicaciones.index');
         Route::get('/monedas', App\Livewire\GestionarMonedas::class)->name('monedas.index');
         Route::get('/cuentas', App\Livewire\GestionarCuentas::class)->name('cuentas.index');
+        Route::get('/estado-de-cuenta', App\Livewire\EstadoDeCuenta::class)->name('estado-de-cuenta.index');
     });
 
     Route::middleware(['permission:access pos'])->group(function () {
