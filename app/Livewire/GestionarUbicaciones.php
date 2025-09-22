@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Ubicacion;
 use App\Models\Zona;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log; // Add this line
 
 class GestionarUbicaciones extends Component
 {
@@ -70,13 +71,15 @@ class GestionarUbicaciones extends Component
 
         $this->validate($rules);
 
+        $data = [
+            'nombre' => $this->nombre,
+            'tipo' => $this->tipo,
+            'direccion' => $this->direccion,
+        ];
+
         Ubicacion::updateOrCreate(
             ['id' => $this->ubicacionId],
-            [
-                'nombre' => $this->nombre,
-                'tipo' => $this->tipo,
-                'direccion' => $this->direccion,
-            ]
+            $data
         );
 
         $this->closeModals();
@@ -166,4 +169,6 @@ class GestionarUbicaciones extends Component
         $this->showZonaModal = false;
         $this->showDeleteModal = false;
     }
+
+    
 }

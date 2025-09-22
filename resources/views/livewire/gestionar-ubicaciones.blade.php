@@ -43,9 +43,11 @@
                                             <div class="space-y-1">
                                                 @foreach($ubicacion->zonas as $zona)
                                                     <div class="flex items-center justify-between">
-                                                        <span>- {{ $zona->nombre }}</span>
+                                                        <span>
+                                                            - {{ $zona->nombre }}
+                                                        </span>
                                                         <div>
-                                                            <button wire:click="editZona({{ $zona }})" class="text-xs text-indigo-600 hover:text-indigo-900">Editar</button>
+                                                            <button wire:click="editZona({{ $zona }})" class="text-xs text-indigo-600 hover:text-indigo-900 ml-2">Editar</button>
                                                             <button wire:click="confirmDelete('zona', {{ $zona->id }})" class="text-xs text-red-600 hover:text-red-900 ml-2">Eliminar</button>
                                                         </div>
                                                     </div>
