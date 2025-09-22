@@ -57,6 +57,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit facturas-compra',
             'delete facturas-compra',
             'view ubicaciones',
+            'configure pos zones',
             'view monedas',
             'view cuentas',
             'view estado de cuenta',
@@ -106,6 +107,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit facturas-compra',
                 'delete facturas-compra',
                 'view ubicaciones',
+                'configure pos zones',
                 'view monedas',
                 'view cuentas',
                 'view estado de cuenta',
@@ -119,6 +121,7 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
             'vendedor' => [
                 'access pos',
+                'configure pos zones',
             ],
         ];
 

@@ -67,6 +67,11 @@
                                     Ubicaciones
                                 </x-dropdown-link>
                                 @endcan
+                                @can('configure pos zones')
+                                <x-dropdown-link :href="route('configuracion-tienda.index')">
+                                    Configuración POS
+                                </x-dropdown-link>
+                                @endcan
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -228,6 +233,11 @@
                     @can('view ubicaciones')
                     <x-responsive-nav-link :href="route('ubicaciones.index')">
                         Ubicaciones
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('configure pos zones')
+                    <x-responsive-nav-link :href="route('configuracion-tienda.index')">
+                        Configuración POS
                     </x-responsive-nav-link>
                     @endcan
                     

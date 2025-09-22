@@ -62,6 +62,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/pos', App\Livewire\PosMain::class)->name('pos.index');
     });
 
+    Route::get('/configuracion-tienda', \App\Livewire\GestionarConfiguracionTienda::class)->name('configuracion-tienda.index');
+
     // Route for POS Client Test
     Route::get('/pos/client-test', function () {
         return view('pos.client-test');
