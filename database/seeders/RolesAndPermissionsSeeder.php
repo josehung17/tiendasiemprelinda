@@ -57,6 +57,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit facturas-compra',
             'delete facturas-compra',
             'view ubicaciones',
+            'view monedas',
+            'view cuentas',
             'view estado de cuenta',
         ];
 
@@ -104,6 +106,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'edit facturas-compra',
                 'delete facturas-compra',
                 'view ubicaciones',
+                'view monedas',
+                'view cuentas',
                 'view estado de cuenta',
             ],
             'editor' => [

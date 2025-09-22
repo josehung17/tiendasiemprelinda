@@ -1,12 +1,12 @@
 <div class="p-4 sm:p-6 lg:p-8">
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Gestión de Métodos de Pago</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">Crea y administra los métodos de pago específicos para cada cuenta.</p>
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Gestión de Cuentas</h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">Administra las cuentas bancarias, billeteras o cajas de efectivo.</p>
         </div>
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <button type="button" wire:click="create" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
-                Añadir Método de Pago
+                Añadir Cuenta
             </button>
         </div>
     </div>
@@ -24,27 +24,29 @@
                     <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6">Nombre del Método</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Cuenta Asociada</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6">Nombre</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Moneda</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Datos Adicionales</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                            @forelse ($metodosPago as $metodo)
+                            @forelse ($cuentas as $cuenta)
                                 <tr>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6">{{ $metodo->nombre }}</td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $metodo->cuenta->nombre }} ({{ $metodo->cuenta->moneda->codigo }})</td>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6">{{ $cuenta->nombre }}</td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $cuenta->moneda->nombre }} ({{ $cuenta->moneda->codigo }})</td>
+                                    <td class="whitespace-normal px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $cuenta->datos_adicionales }}</td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                        <button wire:click="edit({{ $metodo->id }})" class="text-indigo-600 hover:text-indigo-900">Editar</button>
-                                        <button wire:click="delete({{ $metodo->id }})" wire:confirm="¿Estás seguro de que quieres eliminar este método de pago?" class="ml-4 text-red-600 hover:text-red-900">Eliminar</button>
+                                        <button wire:click="edit({{ $cuenta->id }})" class="text-indigo-600 hover:text-indigo-900">Editar</button>
+                                        <button wire:click="delete({{ $cuenta->id }})" wire:confirm="¿Estás seguro de que quieres eliminar esta cuenta?" class="ml-4 text-red-600 hover:text-red-900">Eliminar</button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
-                                        No se encontraron métodos de pago.
+                                    <td colspan="4" class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
+                                        No se encontraron cuentas.
                                     </td>
                                 </tr>
                             @endforelse
@@ -52,7 +54,7 @@
                     </table>
                 </div>
                  <div class="mt-4">
-                    {{ $metodosPago->links() }}
+                    {{ $cuentas->links() }}
                 </div>
             </div>
         </div>
@@ -66,22 +68,27 @@
             <div x-show="show" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form wire:submit.prevent="save">
                     <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">{{ $metodoPagoId ? 'Editar' : 'Crear' }} Método de Pago</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">{{ $cuentaId ? 'Editar' : 'Crear' }} Cuenta</h3>
                         <div class="mt-4 space-y-4">
                             <div>
-                                <label for="nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre del Método</label>
-                                <input type="text" wire:model.defer="nombre" id="nombre" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Ej: Pago Móvil, Zelle, Efectivo">
+                                <label for="nombre" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre de la Cuenta</label>
+                                <input type="text" wire:model.defer="nombre" id="nombre" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 @error('nombre') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label for="cuenta_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cuenta</label>
-                                <select wire:model.defer="cuenta_id" id="cuenta_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option value="">Seleccione una cuenta</option>
-                                    @foreach($allCuentas as $cuenta)
-                                        <option value="{{ $cuenta->id }}">{{ $cuenta->nombre }} ({{ $cuenta->moneda->codigo }})</option>
+                                <label for="moneda_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Moneda</label>
+                                <select wire:model.defer="moneda_id" id="moneda_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <option value="">Seleccione una moneda</option>
+                                    @foreach($allMonedas as $moneda)
+                                        <option value="{{ $moneda->id }}">{{ $moneda->nombre }} ({{ $moneda->codigo }})</option>
                                     @endforeach
                                 </select>
-                                @error('cuenta_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                @error('moneda_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label for="datos_adicionales" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Datos Adicionales (Opcional)</label>
+                                <textarea wire:model.defer="datos_adicionales" id="datos_adicionales" rows="3" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Email de Zelle, número de cuenta, etc."></textarea>
+                                @error('datos_adicionales') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>

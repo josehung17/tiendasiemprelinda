@@ -94,6 +94,16 @@
                                     Tasa de Cambio
                                 </x-dropdown-link>
                                 @endcan
+                                @can('view monedas')
+                                <x-dropdown-link :href="route('monedas.index')">
+                                    Monedas
+                                </x-dropdown-link>
+                                @endcan
+                                @can('view cuentas')
+                                <x-dropdown-link :href="route('cuentas.index')">
+                                    Cuentas
+                                </x-dropdown-link>
+                                @endcan
                                 @can('view estado de cuenta')
                                 <x-dropdown-link :href="route('estado-de-cuenta.index')">
                                     Estado de Cuenta
@@ -240,6 +250,16 @@
                     @can('view tasa-de-cambio') {{-- Assuming a permission for viewing exchange rate --}}
                     <x-responsive-nav-link :href="route('tasa-de-cambio.index')">
                         Tasa de Cambio
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view monedas')
+                    <x-responsive-nav-link :href="route('monedas.index')">
+                        Monedas
+                    </x-responsive-nav-link>
+                    @endcan
+                    @can('view cuentas')
+                    <x-responsive-nav-link :href="route('cuentas.index')">
+                        Cuentas
                     </x-responsive-nav-link>
                     @endcan
                     @can('view estado de cuenta')
