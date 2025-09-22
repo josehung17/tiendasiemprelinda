@@ -132,12 +132,12 @@
                         <div class="mt-4">
                             <div>
                                 <label for="monto" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Monto</label>
-                                <input type="number" step="0.01" wire:model="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="number" step="0.01" wire:model="monto" id="monto" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 @error('monto') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="mt-4">
                                 <label for="descripcion" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Descripción</label>
-                                <textarea wire:model="descripcion" id="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                                <textarea wire:model="descripcion" id="descripcion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                                 @error('descripcion') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
