@@ -139,8 +139,12 @@
                     <div class="flex items-center space-x-4">
                         <x-select-input wire:model="pagosFactura.{{ $index }}.metodo_pago_id" class="flex-grow">
                             <option value="">{{ __('Selecciona método de pago') }}</option>
-                            @foreach ($metodosPagoDisponibles as $metodo)
-                                <option value="{{ $metodo->id }}">{{ $metodo->nombre }}</option>
+                            @foreach ($metodosPagoDisponibles->groupBy('cuenta.moneda.nombre') as $monedaNombre => $metodosPorMoneda)
+                                <optgroup label="{{ $monedaNombre }}">
+                                    @foreach ($metodosPorMoneda as $metodo)
+                                        <option value="{{ $metodo->id }}">{{ $metodo->cuenta->nombre }} - {{ $metodo->nombre }}</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </x-select-input>
                         <x-text-input wire:model.live="pagosFactura.{{ $index }}.monto_usd" type="number" step="0.01" min="0" placeholder="Monto USD" class="w-32" />
