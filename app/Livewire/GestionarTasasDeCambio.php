@@ -18,7 +18,8 @@ class GestionarTasasDeCambio extends Component
     {
         $tasas = TasaDeCambio::where('moneda', 'like', '%'.$this->search.'%')
             ->orWhere('tasa', 'like', '%'.$this->search.'%')
-            ->orderBy('fecha_actualizacion', 'desc')
+            ->orWhere('fecha_vigencia', 'like', '%'.$this->search.'%')
+            ->orderBy('fecha_vigencia', 'desc')
             ->paginate(10);
 
         return view('livewire.gestionar-tasas-de-cambio', [
