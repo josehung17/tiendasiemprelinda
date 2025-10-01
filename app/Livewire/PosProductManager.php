@@ -4,41 +4,55 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Producto;
+use App\Models\Ubicacion;
 
 class PosProductManager extends Component
 {
-    public $searchTerm = '';
-    public $quantities = [];
+    public $products = [];
 
-    public function getSearchResultsProperty()
+    public function mount()
     {
-        if (strlen($this->searchTerm) < 2) {
-            return collect();
-        }
+        $this->loadProducts();
+    }
 
+    public function loadProducts()
+    {
         $locationId = session('pos_location_id');
-
         if (!$locationId) {
-            return collect();
+            $this->products = collect();
+            return;
         }
 
-        return Producto::where('nombre', 'like', '%' . $this->searchTerm . '%')
-            ->whereHas('ubicaciones', function ($query) use ($locationId) {
-                $query->where('ubicacion_id', $locationId)->where('stock', '>', 0);
+        // Carga todos los productos que tienen stock en al menos una zona de la ubicación actual
+        $this->products = Producto::select([
+            'id', 'nombre', 'descripcion', 'precio', 'ruta_imagen', 'descuento', 
+            'precio_descuento', 'nuevo', 'recomendado', 'categoria_id', 'marca_id'
+        ])
+        ->with([
+            'categoria:id,nombre', 
+            'marca:id,nombre',
+            'zonasStock' => function ($query) use ($locationId) {
+                // Eager load solo las zonas relevantes con stock
+                $query->where('zonas.ubicacion_id', $locationId)->where('producto_ubicacion.stock', '>', 0);
+            }
+        ])
+        ->whereHas('zonasStock', function ($query) use ($locationId) {
+                $query->where('zonas.ubicacion_id', $locationId)->where('producto_ubicacion.stock', '>', 0);
             })
-            ->with(['zonasStock' => function ($query) use ($locationId) {
-                $query->where('ubicacion_id', $locationId);
-            }])
-            ->get()
-            ->map(function ($product) {
-                $defaultZoneStock = $product->zonasStock->firstWhere('pivot.es_zona_predeterminada_pos');
+        ->orderBy('nombre')
+        ->get()
+        ->map(function ($product) {
+            // Esta lógica determina qué zona y stock mostrar por defecto en la lista
+            $defaultZoneStock = $product->zonasStock->firstWhere('pivot.es_zona_predeterminada_pos');
 
-                if ($defaultZoneStock && $defaultZoneStock->pivot->stock > 0) {
-                    $product->stock_display = $defaultZoneStock->pivot->stock;
-                    $product->zone_display_id = $defaultZoneStock->id;
-                    $product->zone_display_name = $defaultZoneStock->nombre;
-                } elseif ($product->zonasStock->where('pivot.stock', '>', 0)->isNotEmpty()) {
-                    $firstZoneWithStock = $product->zonasStock->where('pivot.stock', '>', 0)->first();
+            if ($defaultZoneStock) {
+                $product->stock_display = $defaultZoneStock->pivot->stock;
+                $product->zone_display_id = $defaultZoneStock->id;
+                $product->zone_display_name = $defaultZoneStock->nombre;
+            } else {
+                // Si no hay zona predeterminada con stock, toma la primera que encuentre con stock
+                $firstZoneWithStock = $product->zonasStock->first();
+                if ($firstZoneWithStock) {
                     $product->stock_display = $firstZoneWithStock->pivot->stock;
                     $product->zone_display_id = $firstZoneWithStock->id;
                     $product->zone_display_name = $firstZoneWithStock->nombre;
@@ -47,41 +61,9 @@ class PosProductManager extends Component
                     $product->zone_display_id = null;
                     $product->zone_display_name = 'Sin stock';
                 }
-                return $product;
-            })
-            ->filter(function ($product) {
-                return $product->stock_display > 0;
-            });
-    }
-
-    public function addProductToCart($productId, $zoneId)
-    {
-        $quantity = $this->quantities[$productId] ?? 1;
-
-        if (!is_numeric($quantity) || $quantity <= 0) {
-            $this->dispatch('app-notification-error', ['message' => 'La cantidad debe ser un número positivo.']);
-            return;
-        }
-
-        $product = Producto::find($productId);
-        if (!$product) {
-            $this->dispatch('app-notification-error', ['message' => 'Producto no encontrado.']);
-            return;
-        }
-
-        $stockEntry = $product->ubicaciones()->where('zona_id', $zoneId)->first();
-
-        if (!$stockEntry || $stockEntry->pivot->stock < $quantity) {
-            $this->dispatch('app-notification-error', ['message' => 'Stock insuficiente en la zona seleccionada.']);
-            return;
-        }
-
-        $this->dispatch('productAddedToCart', productId: $productId, quantity: $quantity, zoneId: $zoneId);
-        
-        $this->searchTerm = '';
-        if(isset($this->quantities[$productId])) {
-            $this->quantities[$productId] = 1;
-        }
+            }
+            return $product;
+        });
     }
 
     public function render()

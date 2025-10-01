@@ -44,7 +44,7 @@ class PosClientManager extends Component
         $this->selectedClient = Cliente::find($clientId);
         $this->showCreateClientModal = false; // Close the modal
         $this->searchTerm = ''; // Clear search term
-        $this->searchResults = []; // Clear search results
+        $this->dispatch('clientSelected', $clientId); // Dispatch event to PosMain
     }
 
     public function render()

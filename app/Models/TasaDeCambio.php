@@ -11,9 +11,11 @@ class TasaDeCambio extends Model
         'moneda',
         'tasa',
         'fecha_actualizacion',
+        'fecha_vigencia',
     ];
 
     protected $casts = [
-        'fecha_actualizacion' => 'date',
+        'fecha_actualizacion' => 'datetime',
+        'fecha_vigencia' => 'date',
     ];
 }
