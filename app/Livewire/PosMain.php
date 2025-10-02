@@ -75,7 +75,7 @@ class PosMain extends Component
 
         if (!$tasaVigente || Carbon::parse($tasaVigente->fecha_vigencia)->isBefore($today)) {
             $this->rateInfo = ['message' => 'Tasa desactualizada. Intentando actualizar desde la API...'];
-            $this->dispatch('app-notification-info', ['message' => 'Tasa desactualizada, actualizando...']);
+            $this->dispatch('app-notification-info', message: 'Tasa desactualizada, actualizando...');
 
             $nuevaTasa = $this->actualizarTasaDesdeApi();
 
@@ -115,7 +115,7 @@ class PosMain extends Component
 
                     $tasaExistente = TasaDeCambio::whereDate('fecha_vigencia', $fechaVigencia)->first();
                     if ($tasaExistente) {
-                        $this->dispatch('app-notification-info', ['message' => 'La tasa de la API para ' . $fechaVigencia . ' ya existía. Usando tasa existente.']);
+                        $this->dispatch('app-notification-info', message: 'La tasa de la API para ' . $fechaVigencia . ' ya existía. Usando tasa existente.');
                         return $tasaExistente;
                     }
 
@@ -131,7 +131,7 @@ class PosMain extends Component
             Log::error('BCV API: Connection error', ['exception' => $e->getMessage()]);
         }
         
-        $this->dispatch('app-notification-error', ['message' => 'No se pudo obtener la tasa de cambio de la API.']);
+        $this->dispatch('app-notification-error', message: 'No se pudo obtener la tasa de cambio de la API.');
         return null;
     }
 
@@ -163,7 +163,7 @@ class PosMain extends Component
 
         $tasaExistente = TasaDeCambio::whereDate('fecha_vigencia', $this->manualRateDate)->first();
         if ($tasaExistente) {
-            $this->dispatch('app-notification-error', ['message' => 'Ya existe una tasa para la fecha ' . $this->manualRateDate]);
+            $this->dispatch('app-notification-error', message: 'Ya existe una tasa para la fecha ' . $this->manualRateDate);
             return;
         }
 
@@ -191,8 +191,8 @@ class PosMain extends Component
         $this->locationIsSelected = true;
         $this->modalStep = 'location';
 
-        $this->dispatch('app-notification-success', ['message' => 'Tienda establecida: ' . $this->activeLocationName]);
-        $this->dispatch('app-notification-success', ['message' => 'Tasa de cambio fijada en: ' . $this->activeExchangeRate->tasa]);
+        $this->dispatch('app-notification-success', message: 'Tienda establecida: ' . $this->activeLocationName);
+        $this->dispatch('app-notification-success', message: 'Tasa de cambio fijada en: ' . $this->activeExchangeRate->tasa);
     }
 
     public function clearLocation()
@@ -229,17 +229,17 @@ class PosMain extends Component
         $cartItems = json_decode($cartItemsJSON, true);
 
         if (empty($cartItems)) {
-            $this->dispatch('app-notification-error', ['message' => 'El carrito está vacío.']);
+            $this->dispatch('app-notification-error', message: 'El carrito está vacío.');
             return;
         }
 
         if (!$this->activeExchangeRate) {
-            $this->dispatch('app-notification-error', ['message' => 'No hay una tasa de cambio activa.']);
+            $this->dispatch('app-notification-error', message: 'No hay una tasa de cambio activa.');
             return;
         }
 
         if (!$this->selectedClient) {
-            $this->dispatch('app-notification-error', ['message' => 'Debe seleccionar un cliente para guardar la venta.']);
+            $this->dispatch('app-notification-error', message: 'Debe seleccionar un cliente para guardar la venta.');
             return;
         }
 
@@ -276,7 +276,7 @@ class PosMain extends Component
             }
 
             // 4. Dispatch events
-            $this->dispatch('app-notification-success', ['message' => "Venta #{$factura->id} guardada como borrador."]);
+            $this->dispatch('app-notification-success', message: "Venta #{$factura->id} guardada como borrador.");
             $this->dispatch('ventaProcesada');
         });
     }

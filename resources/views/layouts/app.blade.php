@@ -36,7 +36,7 @@
         <!-- Global Toast Notification -->
         <div x-data="{ show: false, message: '', type: 'success' }"
              x-init="
-                $watch('show', value => { if (value) setTimeout(() => $data.show = false, 3000) });
+                $watch('show', value => { if (value) setTimeout(() => $data.show = false, 4000) });
 
                 window.addEventListener('app-notification-success', event => {
                     console.log('Success event received:', event.detail.message);
@@ -50,6 +50,12 @@
                     $data.type = 'error';
                     $data.show = true;
                 });
+                window.addEventListener('app-notification-info', event => {
+                    console.log('Info event received:', event.detail.message);
+                    $data.message = event.detail.message;
+                    $data.type = 'info';
+                    $data.show = true;
+                });
              "
              style="position: fixed; top: 5rem; right: 1rem; z-index: 50;"
              x-show="show"
@@ -60,7 +66,11 @@
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-90"
              class="p-4 rounded-md shadow-lg"
-             :class="{ 'bg-green-500 text-white': type === 'success', 'bg-red-500 text-white': type === 'error' }"
+             :class="{ 
+                 'bg-green-500 text-white': type === 'success', 
+                 'bg-red-500 text-white': type === 'error',
+                 'bg-blue-500 text-white': type === 'info'
+             }"
              role="alert">
             <span class="font-semibold" x-text="message"></span>
             <button @click="show = false" class="ml-4 text-xl font-bold leading-none">&times;</button>
