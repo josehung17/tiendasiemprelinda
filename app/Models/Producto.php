@@ -86,4 +86,23 @@ class Producto extends Model
                     ->withPivot('id', 'stock', 'es_zona_predeterminada_pos')
                     ->withTimestamps();
     }
+
+    public function getZonaPosPredeterminada(int $ubicacionId): ?array
+    {
+        $defaultZone = $this->zonasStock()
+                            ->wherePivot('ubicacion_id', $ubicacionId)
+                            ->wherePivot('es_zona_predeterminada_pos', true)
+                            ->first();
+
+        if ($defaultZone) {
+            return [
+                'zone_id' => $defaultZone->id,
+                'zone_name' => $defaultZone->nombre,
+                'stock_disponible' => $defaultZone->pivot->stock,
+                'pivot_id' => $defaultZone->pivot->id,
+            ];
+        }
+
+        return null;
+    }
 }

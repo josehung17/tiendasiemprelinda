@@ -1,4 +1,4 @@
-<div x-data="{ showPricesInBolivar: false, activeExchangeRate: {{ $activeExchangeRate ? $activeExchangeRate->tasa : 'null' }}, isDetailModalOpen: false, detailModalProduct: null }" x-init="$store.cart.init()" @clear-cart.window="$store.cart.clear()" @venta-procesada.window="$store.cart.clear()" class="h-screen bg-gray-100 dark:bg-gray-900">
+<div x-data="{ showPricesInBolivar: false, activeExchangeRate: {{ $activeExchangeRate ? $activeExchangeRate->tasa : 'null' }}, isDetailModalOpen: false, detailModalProduct: null, selectedClient: null }" x-init="$store.cart.init()" @clear-cart.window="$store.cart.clear()" @venta-procesada.window="$store.cart.clear()" @alpine-client-selected.window="selectedClient = $event.detail.client" class="h-screen bg-gray-100 dark:bg-gray-900">
 
     @if($locationIsSelected)
         {{-- Main POS Interface --}}
@@ -46,11 +46,12 @@
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Producto</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cant.</th>
                                         <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Zona</th>
                                         <th scope="col" class="relative px-3 py-2"><span class="sr-only">Acciones</span></th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <template x-for="item in $store.cart.items" :key="`${item.product_id}-${item.zone_id}`">
+                                    <template x-for="item in $store.cart.items" :key="`${item.id}-${item.zone_id}`">
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                             <td @click="detailModalProduct = item; isDetailModalOpen = true" class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center space-x-2 cursor-pointer">
                                                 <template x-if="item.ruta_imagen">
@@ -63,22 +64,54 @@
                                                 </template>
                                                 <div>
                                                     <span x-text="item.nombre"></span><br>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="`Zona: ${item.zone_name}`"></span><br>
                                                     <span class="text-xs text-gray-500 dark:text-gray-400">
-                                                        <span x-show="!showPricesInBolivar" x-text="`$${parseFloat(item.precio).toFixed(2)} c/u`"></span>
+                                                        <span x-show="!showPricesInBolivar" x-text="`${parseFloat(item.precio).toFixed(2)} c/u`"></span>
                                                         <span x-show="showPricesInBolivar && activeExchangeRate" x-text="`Bs. ${(item.precio * activeExchangeRate).toFixed(2)} c/u`"></span>
                                                     </span>
                                                 </div>
                                             </td>
                                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                <input type="number" :value="item.quantity" @change="$store.cart.updateQuantity(item.product_id, item.zone_id, $event.target.value)" min="1" :max="item.stock_disponible" class="w-20 text-center border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                                                <input type="number" x-model.number="item.quantity" @input="$store.cart.updateQuantity(item.id, item.zone_id, item.quantity)" min="1" :max="item.stock_disponible" class="w-20 text-center border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                             </td>
                                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                                <span x-show="!showPricesInBolivar" x-text="`$${(item.precio * item.quantity).toFixed(2)}`"></span>
+                                                <span x-show="!showPricesInBolivar" x-text="`${(item.precio * item.quantity).toFixed(2)}`"></span>
                                                 <span x-show="showPricesInBolivar && activeExchangeRate" x-text="`Bs. ${(item.precio * item.quantity * activeExchangeRate).toFixed(2)}`"></span>
                                             </td>
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                                                <div x-data="{ availableZones: [], isLoadingZones: false }"
+                                                     x-init="async () => {
+                                                         isLoadingZones = true;
+                                                         availableZones = await $wire.getZonasDisponiblesParaProducto(item.id);
+                                                         isLoadingZones = false;
+                                                     }">
+                                                    <template x-if="isLoadingZones">
+                                                        <select disabled class="block w-full pl-2 pr-8 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 sm:text-sm rounded-md">
+                                                            <option>Cargando...</option>
+                                                        </select>
+                                                    </template>
+                                                    <template x-if="!isLoadingZones && availableZones.length === 0">
+                                                        <select disabled class="block w-full pl-2 pr-8 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 sm:text-sm rounded-md">
+                                                            <option>No hay zonas disponibles</option>
+                                                        </select>
+                                                    </template>
+                                                    <template x-if="!isLoadingZones && availableZones.length > 0">
+                                                        <select x-model="item.zone_id"
+                                                                @change="
+                                                                    const selectedZone = availableZones.find(z => z.id == $event.target.value);
+                                                                    if (selectedZone) {
+                                                                        $store.cart.actualizarZonaItem(item.id, item.zone_id, selectedZone.id, selectedZone.nombre, selectedZone.stock);
+                                                                    }
+                                                                "
+                                                                class="block w-full pl-2 pr-8 py-1 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                                            <template x-for="zone in availableZones" :key="zone.id">
+                                                                <option :value="zone.id" x-text="`${zone.nombre} (Stock: ${zone.stock})`" x-bind:selected="zone.id === item.zone_id"></option>
+                                                            </template>
+                                                        </select>
+                                                    </template>
+                                                </div>
+                                            </td>
                                             <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
-                                                <button @click="$store.cart.remove(item.id, item.zone_display_id)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">&times;</button>
+                                                <button @click="$store.cart.remove(item.id, item.zone_id)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-600 text-xl">&times;</button>
                                             </td>
                                         </tr>
                                     </template>
@@ -110,7 +143,7 @@
                         @endif
 
                         <button @click="$wire.procesarVenta(JSON.stringify($store.cart.items))" :disabled="$store.cart.items.length === 0 || !selectedClient" class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Procesar Venta
+                            Guardar Borrador
                         </button>
                         <button @click="$store.cart.clear()" type="button" class="w-full mt-3 inline-flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
                             Cancelar Venta

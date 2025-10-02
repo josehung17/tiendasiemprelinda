@@ -58,6 +58,31 @@ document.addEventListener('alpine:init', () => {
             this.items = [...this.items];
         },
 
+        actualizarZonaItem(productId, oldZoneId, newZoneId, newZoneName, newStockDisponible) {
+            const itemIndex = this.items.findIndex(item => item.id === productId && item.zone_id === oldZoneId);
+
+            if (itemIndex !== -1) {
+                // Check if an item with the new zone already exists
+                const existingItemWithNewZone = this.items.find(item => item.id === productId && item.zone_id === newZoneId);
+
+                if (existingItemWithNewZone) {
+                    // If it exists, merge quantities and remove the old item
+                    existingItemWithNewZone.quantity += this.items[itemIndex].quantity;
+                    existingItemWithNewZone.stock_disponible = newStockDisponible; // Update stock for the merged item
+                    this.items.splice(itemIndex, 1); // Remove the old item
+                    Livewire.dispatch('app-notification-info', { message: `Cantidades fusionadas para ${newZoneName}.` });
+                } else {
+                    // Otherwise, just update the zone details for the current item
+                    this.items[itemIndex].zone_id = newZoneId;
+                    this.items[itemIndex].zone_name = newZoneName;
+                    this.items[itemIndex].stock_disponible = newStockDisponible;
+                    Livewire.dispatch('app-notification-success', { message: `Zona de ${this.items[itemIndex].nombre} actualizada a ${newZoneName}.` });
+                }
+                // Force reactivity
+                this.items = [...this.items];
+            }
+        },
+
         get count() {
             if (!this.items) return 0;
             return this.items.reduce((total, item) => total + item.quantity, 0);

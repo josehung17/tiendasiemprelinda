@@ -47,23 +47,46 @@ class PosProductManager extends Component
 
             if ($defaultZoneStock) {
                 $product->stock_display = $defaultZoneStock->pivot->stock;
-                $product->zone_display_id = $defaultZoneStock->id;
-                $product->zone_display_name = $defaultZoneStock->nombre;
+                $product->zone_id = $defaultZoneStock->id;
+                $product->zone_name = $defaultZoneStock->nombre;
             } else {
                 // Si no hay zona predeterminada con stock, toma la primera que encuentre con stock
                 $firstZoneWithStock = $product->zonasStock->first();
                 if ($firstZoneWithStock) {
                     $product->stock_display = $firstZoneWithStock->pivot->stock;
-                    $product->zone_display_id = $firstZoneWithStock->id;
-                    $product->zone_display_name = $firstZoneWithStock->nombre;
+                    $product->zone_id = $firstZoneWithStock->id;
+                    $product->zone_name = $firstZoneWithStock->nombre;
                 } else {
                     $product->stock_display = 0;
-                    $product->zone_display_id = null;
-                    $product->zone_display_name = 'Sin stock';
+                    $product->zone_id = null;
+                    $product->zone_name = 'Sin stock';
                 }
             }
             return $product;
         });
+    }
+
+    public function getZonasDisponiblesParaProducto(int $productId, int $ubicacionId): array
+    {
+        $product = Producto::find($productId);
+        if (!$product) {
+            return [];
+        }
+
+        $availableZones = $product->zonasStock()
+                                  ->wherePivot('ubicacion_id', $ubicacionId)
+                                  ->wherePivot('stock', '>', 0)
+                                  ->get()
+                                  ->map(function ($zone) {
+                                      return [
+                                          'id' => $zone->id,
+                                          'nombre' => $zone->nombre,
+                                          'stock' => $zone->pivot->stock,
+                                      ];
+                                  })
+                                  ->toArray();
+
+        return $availableZones;
     }
 
     public function render()

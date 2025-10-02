@@ -7,6 +7,8 @@ use App\Models\FacturaVenta;
 use App\Models\FacturaVentaDetalle;
 use App\Models\TasaDeCambio;
 use App\Models\Ubicacion;
+use App\Models\Producto;
+use App\Models\Zona;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -277,6 +279,33 @@ class PosMain extends Component
             $this->dispatch('app-notification-success', ['message' => "Venta #{$factura->id} guardada como borrador."]);
             $this->dispatch('ventaProcesada');
         });
+    }
+
+    public function getZonasDisponiblesParaProducto(int $productId): array
+    {
+        if (!$this->activeLocationId) {
+            return [];
+        }
+
+        $product = Producto::find($productId);
+        if (!$product) {
+            return [];
+        }
+
+        $availableZones = $product->zonasStock()
+                                  ->wherePivot('ubicacion_id', $this->activeLocationId)
+                                  ->wherePivot('stock', '>', 0)
+                                  ->get()
+                                  ->map(function ($zone) {
+                                      return [
+                                          'id' => $zone->id,
+                                          'nombre' => $zone->nombre,
+                                          'stock' => $zone->pivot->stock,
+                                      ];
+                                  })
+                                  ->toArray();
+
+        return $availableZones;
     }
 
     public function render()

@@ -39,8 +39,8 @@
                 $watch('show', value => { if (value) setTimeout(() => $data.show = false, 3000) });
 
                 window.addEventListener('app-notification-success', event => {
-                    console.log('Success event received:', event.detail[0].message); // Corrected access
-                    $data.message = event.detail[0].message; // Corrected access
+                    console.log('Success event received:', event.detail.message);
+                    $data.message = event.detail.message;
                     $data.type = 'success';
                     $data.show = true;
                 });
